@@ -1,0 +1,24 @@
+1. 题目的交付形式包括2个部分
+a. 核心实现的IPC Library
+b. 基于IPC library进行跟基于berkeley socket的IPC进行benchmark比较
+c. berkeley socket包括2种情况
+	i. 基于loopback的TCP
+	ii. Unix Domain Socket
+
+2. 交付的IPC library分成3个层级
+a. 层级一，最底层的IPC实现，实现基本能力(必备)
+b. 基于层级一实现，提供类似RPC的编程体验友好性(选择实现2-c时，可不实现)
+c. 基于层级一实现，对已有的程序，不修改代码，将基于socket API的本地通信，自动转化成新实现的IPC通信(较为困难，可选)
+	i. 有局限的实现方式，使用LD_PRELOAD加载共享库，hook系统调用。
+	ii. 通用实现方式，基于Linux kernel最新工程创新eBPF & XDP(最优 & 最困难)
+
+3. 关于编程语言
+a. 如果选择2-c，编程语言必包含或仅有c/c++
+b. 如果选择2-b, 对于系统调用有一定程度支持的语言都可使用
+
+Reference:
+https://www.infoq.cn/article/2017/12/why-service-mesh
+https://en.wikipedia.org/wiki/Inter-process_communication
+https://lwn.net/Articles/740157/
+https://en.wikipedia.org/wiki/Express_Data_Path
+https://en.wikipedia.org/wiki/Berkeley_Packet_Filter
