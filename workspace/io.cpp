@@ -67,8 +67,10 @@ Connection_t *addConnection(Pool_t *pool) {
 Pool_t *ConnectionPool;
 map<int, Connection_t *> ConnectionMap;
 
-int openConnection(uint32_t port) {
-	uint32_t idx = port;
+#define get_idx(srcPort, destPort) srcPort * 65536 + destPort
+
+int openConnection(uint32_t srcPort, uint32_t destPort) {
+	uint32_t idx = get_idx(srcPort, destPort);
 	if (ConnectionMap.find(idx) != ConnectionMap.end()) {
 		// Already connected
 		return -1;
@@ -79,8 +81,8 @@ int openConnection(uint32_t port) {
 	return 0;
 }
 
-int closeConnection(uint32_t port) {
-	uint32_t idx = port;
+int closeConnection(uint32_t srcPort, uint32_t destPort) {
+	uint32_t idx = get_idx(srcPort, destPort);
 	if (ConnectionMap.find(idx) == ConnectionMap.end()) {
 		return -1;
 	}
