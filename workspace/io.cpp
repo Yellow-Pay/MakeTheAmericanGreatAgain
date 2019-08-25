@@ -1,8 +1,13 @@
 #include <string.h>
 #include <iostream>
 #include <map>
+#include <cassert>
 #include <queue>
+#include <sys/shm.h>
+
 using namespace std;
+
+#define SHM_SIZE 4096
 
 typedef struct Connection {
 	bool idle;
@@ -18,7 +23,7 @@ typedef struct Pool {
 } Pool_t;
 
 Pool_t *init(int size) {
-	Pool_t *pool = (Pool_t *)malloc(sizeof(Pool_t));
+	Pool_t *pool = new Pool_t();
 	if (!pool) return NULL;
 	pool->connections = (Connection_t *)malloc(sizeof(Connection_t) * size);
 	memset(pool->connections, 0, sizeof(Connection_t) * size);
@@ -44,7 +49,7 @@ static inline void expandPool(Pool_t *pool) {
 	pool->capacity = new_size;
 }
 
-Connection_t *addConnection(Pool_t *pool) {
+Connection_t *addConnection(Pool_t *pool, uint32_t key) {
 	Connection_t *conn = NULL;
 	uint32_t size = pool->size;
 	uint32_t capacity = pool->capacity;
@@ -75,7 +80,7 @@ int openConnection(uint32_t srcPort, uint32_t destPort) {
 		// Already connected
 		return -1;
 	}
-	Connection_t *conn = addConnection(ConnectionPool);
+	Connection_t *conn = addConnection(ConnectionPool, idx);
 	ConnectionMap[idx] = conn;
 	conn->idle = false;
 	return 0;
@@ -96,9 +101,10 @@ int closeConnection(uint32_t srcPort, uint32_t destPort) {
 
 int main() {
 	ConnectionPool = init(8);
-	openConnection(1);
-	openConnection(2);
-	openConnection(3);
-	closeConnection(2);
+	ConnectionPool->idle_list.push(0);
+	assert(openConnection(1, 2) == 0);
+	assert(openConnection(2, 1)  == 0);
+	assert(openConnection(3, 2)  == 0);
+	closeConnection(2, 1);
 	return 0;
 }
