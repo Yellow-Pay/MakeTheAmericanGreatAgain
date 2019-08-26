@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-obj-c=RingBuffer.cpp
+obj-c=RingBuffer.cpp Connection.cpp
 
 obj-o=$(obj-c:.cpp=.o)
 

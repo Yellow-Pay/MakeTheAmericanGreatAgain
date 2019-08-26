@@ -29,7 +29,7 @@ void rb_destroy(RingBuffer_t *rb) {
 	}
 }
 
-int read(RingBuffer_t *rb, int len, char *output) {
+int rb_read(RingBuffer_t *rb, int len, char *output) {
 	uint32_t head, tail, new_head;
 	int size;
 retry:
@@ -56,7 +56,7 @@ retry:
 	return len;
 }
 
-int write(RingBuffer_t *rb, int len, char *input) {
+int rb_write(RingBuffer_t *rb, int len, char *input) {
 	uint32_t head, tail, old_tail, new_tail;
 	int size;
 retry:
