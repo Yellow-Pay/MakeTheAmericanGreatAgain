@@ -11,6 +11,8 @@ using namespace std;
 #define SHM_SIZE 32
 #define get_idx(srcPort, destPort) srcPort * 65536 + destPort
 #define SHM_DATA_SIZE (SHM_SIZE - 2 * sizeof(uint32_t))
+#define GET_HEAD ((uint32_t *)address)[0];
+#define GET_TAIL ((uint32_t *)address)[1];
 
 struct RingBuffer {
 	int shmid;
@@ -30,14 +32,14 @@ struct RingBuffer {
 	}
 	void destroy() {
 		// destroy the shared memory 
-    	shmctl(shmid,IPC_RMID,NULL); 
+		shmctl(shmid,IPC_RMID,NULL); 
 	}
 	~RingBuffer() {
 		shmdt(address);
 		shmid_ds info;
 		shmctl(shmid, IPC_STAT, &info);
 		if (info.shm_nattch == 0) {
-    		shmctl(shmid,IPC_RMID,NULL); 
+			shmctl(shmid,IPC_RMID,NULL); 
 		}
 	}
 	/* Head, Tail, content */
@@ -48,26 +50,18 @@ struct RingBuffer {
 			data[index] -= SHM_DATA_SIZE;
 		}
 	}
-	uint32_t getPointer(int index) {
-		uint32_t* data = (uint32_t*) address;
-		return data[index];
-	}
-	uint32_t getHead() {
-		return getPointer(0);
-	}
+
 	void moveHead(uint32_t len) {
 		movePointer(len, 0);
 	}
-	uint32_t getTail() {
-		return getPointer(1);
-	}
+
 	void moveTail(uint32_t len) {
 		movePointer(len, 1);	
 	}
 
 	int read(int len, char *output) {
-		auto head = getHead();
-		auto tail = getTail();
+		auto head = GET_HEAD;
+		auto tail = GET_TAIL;
 		int size = (tail > head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
 		if (size < len) {
 			len = size;
@@ -84,9 +78,10 @@ struct RingBuffer {
 		return len;
 	}
 
+	// Write as many as possible when the ringbuffer is full
 	int write(int len, const char *input) {
-		auto head = getHead();
-		auto tail = getTail();
+		auto head = GET_HEAD;
+		auto tail = GET_TAIL;
 		int size = (head > tail) ? (head - tail) : (head + SHM_DATA_SIZE - tail);
 		if (size < len) {
 			len = size;
@@ -135,12 +130,12 @@ void testConnection(int argc, char* argv[]) {
 	cout << "write success: " << c.write(12, "abcdefghijkl") << endl;
 	memset(buf, 0, 100);
 	cout << "read success: " << c_reverse.read(5, buf) << endl;
-    cout << "Data read in memory: " << buf << endl; 
-    cout << "Data written in memory: " << argv[3] << endl; 
+	cout << "Data read in memory: " << buf << endl; 
+	cout << "Data written in memory: " << argv[3] << endl; 
 	cout << "write success: " << c.write(5, argv[3]) << endl;
 	memset(buf, 0, 100);
 	cout << "read success: " << c_reverse.read(12, buf) << endl;
-    cout << "Data read in memory: " << buf << endl;
+	cout << "Data read in memory: " << buf << endl;
 }
 
 typedef struct Pool {
