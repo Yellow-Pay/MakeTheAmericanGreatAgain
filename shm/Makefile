@@ -1,8 +1,10 @@
 CC=gcc
 CXX=g++
-obj-c: RingBuffer.cpp
+obj-c=RingBuffer.cpp
 
-obj-o: $(obj-c:.cpp:.o)
+obj-o=$(obj-c:.cpp=.o)
+
+all: $(obj-o)
 
 %.o: %.cpp
 	$(CXX) -c $^ -o $@
