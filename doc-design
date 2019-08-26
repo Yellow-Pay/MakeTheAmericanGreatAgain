@@ -22,3 +22,11 @@ b. 提供rpc语义(偏上层、用户体验好，用户容易上手，但是定�
 	i. 用户idl或实现的编程语言的函数声明
 	ii. 框架通过代码生成或者动态代理提供函数实现 (具体取决于具体编程语言特性)
 c. 结合a&b, 提供2个层级的接口(功能最丰富全面、但工作量较大)
+
+// 传入一个flag让用户确定是用新的还是旧的函数
+
+ConnectionMap
+shared_mem 65536 * 8 byte array
+shmem for every src_port
+every src_port maintains its dst_port shmem (fix size, expand when no space)
+
