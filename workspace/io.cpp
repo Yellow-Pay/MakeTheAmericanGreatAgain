@@ -8,8 +8,9 @@
 
 using namespace std;
 
-#define SHM_SIZE 4096
+#define SHM_SIZE 32
 #define get_idx(srcPort, destPort) srcPort * 65536 + destPort
+#define SHM_DATA_SIZE (SHM_SIZE - 2 * sizeof(char*))
 
 struct RingBuffer {
 	int shmid;
@@ -17,11 +18,15 @@ struct RingBuffer {
 	char* content;
 	RingBuffer(key_t key) {
 		shmid = shmget(key, SHM_SIZE, 0666|IPC_CREAT);
+		shmid_ds info;
+		shmctl(shmid, IPC_STAT, &info);
 		address = (char*) shmat(shmid, (void*)0, 0);
 		char** data = (char**)address;
-		data[0] = (char*)&data[2];
-		data[1] = (char*)&data[2];
 		content = (char*)&data[2];
+		if (info.shm_nattch == 0) {
+			data[0] = content;
+			data[1] = content;
+		}
 	}
 	void destroy() {
 		// destroy the shared memory 
@@ -29,39 +34,71 @@ struct RingBuffer {
 	}
 	~RingBuffer() {
 		shmdt(address);
+		shmid_ds info;
+		shmctl(shmid, IPC_STAT, &info);
+		if (info.shm_nattch == 0) {
+    		shmctl(shmid,IPC_RMID,NULL); 
+		}
 	}
 	/* Head, Tail, content */
-	void* getHead() {
+	void movePointer(uint32_t len, int index) {
 		char** data = (char**) address;
-		return data[0];
+		data[index] += len;
+		if (data[index] > content + SHM_DATA_SIZE) {
+			data[index] -= SHM_DATA_SIZE;
+		}
+	}
+	void* getPointer(int index) {
+		char** data = (char**) address;
+		return data[index];
+	}
+	void* getHead() {
+		return getPointer(0);
 	}
 	void moveHead(uint32_t len) {
-		char** data = (char**) address;
-		data[0] += len;		
+		movePointer(len, 0);
 	}
 	void* getTail() {
-		char** data = (char**) address;
-		return data[1];
+		return getPointer(1);
 	}
 	void moveTail(uint32_t len) {
-		char** data = (char**) address;
-		data[1] += len;		
+		movePointer(len, 1);	
 	}
 
 	int read(int len, char *output) {
 		char* head = (char*)getHead();
-		memcpy(output, head, len);
+		char* tail = (char*)getTail();
+		int size = (tail > head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
+		if (size < len) {
+			len = size;
+		}
+		if (head + len < content + SHM_DATA_SIZE) {
+			memcpy(output, head, len);
+		} else {
+			int remain_length = SHM_DATA_SIZE - (head - content);
+			memcpy(output, head, remain_length);
+			memcpy(output + remain_length, content, len - remain_length);
+		}
 		moveHead(len);
-		// TODO: add circle
 		// TODO: add multi thread support
 		return len;
 	}
 
-	int write(int len, char *input) {
+	int write(int len, const char *input) {
+		char* head = (char*)getHead();
 		char* tail = (char*)getTail();
-		memcpy(tail, input, len);
+		int size = (head > tail) ? (head - tail) : (head + SHM_DATA_SIZE - tail);
+		if (size < len) {
+			len = size;
+		}
+		if (tail + len < content + SHM_DATA_SIZE) {
+			memcpy(tail, input, len);
+		} else {
+			int remain_length = SHM_DATA_SIZE - (tail - content);
+			memcpy(tail, input, remain_length);
+			memcpy(content, input, len - remain_length);
+		}
 		moveTail(len);
-		// TODO: add circle
 		// TODO: add multi thread support
 		return len;
 	}
@@ -80,7 +117,7 @@ typedef struct Connection {
 	int read(int len, char *output) {
 		return readRB.read(len, output);
 	}
-	int write(int len, char *input) {
+	int write(int len, const char *input) {
 		return writeRB.write(len, input);
 	}
 
@@ -93,11 +130,17 @@ void testConnection(int argc, char* argv[]) {
 	assert(argc == 4);
 	uint32_t src = atoi(argv[1]), dst = atoi(argv[2]);
 	Connection c(src, dst);
-    cout << "Data written in memory: " << argv[3] << "\n"; 
-	c.write(5, argv[3]);
+	Connection c_reverse(dst, src);
 	char buf[100];
-	c.read(5, buf);
-    cout << "Data read in memory: " << buf << "\n"; 
+	cout << "write success: " << c.write(12, "abcdefghijkl") << endl;
+	memset(buf, 0, 100);
+	cout << "read success: " << c_reverse.read(5, buf) << endl;
+    cout << "Data read in memory: " << buf << endl; 
+    cout << "Data written in memory: " << argv[3] << endl; 
+	cout << "write success: " << c.write(5, argv[3]) << endl;
+	memset(buf, 0, 100);
+	cout << "read success: " << c_reverse.read(12, buf) << endl;
+    cout << "Data read in memory: " << buf << endl;
 }
 
 typedef struct Pool {
