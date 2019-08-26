@@ -32,9 +32,9 @@ Connection_t *conn_create(Pool_t *pool) {
 		expandPool(pool);
 	}
 	uint32_t idx = size;
-	if (!pool->idle_list->empty()) {
-		idx = pool->idle_list->front();
-		pool->idle_list->pop();
+	if (!list_empty(pool->idle_list)) {
+		idx = list_front(pool->idle_list);
+		list_pop(pool->idle_list);
 	}
 	conn = &pool->connections[idx];
 	if (!conn->rb) {
@@ -50,7 +50,7 @@ void conn_remove(Pool_t *pool, uint32_t src_port, uint32_t dst_port) {
 	Connection_t *conn = ConnectionMap[idx];
 	conn->idle = true;
 	uint32_t idle_idx = (conn - ConnectionPool->connections);
-	pool->idle_list->push(idle_idx);
+	list_push(pool->idle_list, idle_idx);
 	ConnectionMap.erase(idx);
 }
 
@@ -58,11 +58,18 @@ Pool_t *pool_init(int size) {
 	Pool_t *pool = (Pool_t *)malloc(sizeof(Pool_t));
 	if (!pool) return NULL;
 	pool->connections = (Connection_t *)malloc(sizeof(Connection_t) * size);
-	memset(pool->connections, 0, sizeof(Connection_t) * size);
 	if (!pool->connections) {
 		free(pool);
 		return NULL;
 	}
+	pool->idle_list = (List_t *)malloc(sizeof(List_t));
+	if (!pool->idle_list) {
+		free(pool->connections);
+		free(pool);
+		return NULL;
+	}
+	memset(pool->connections, 0, sizeof(Connection_t) * size);
+	memset(pool->idle_list, 0, sizeof(List_t));
 	for (int i = 0; i < size; i++) {
 		pool->connections[i].idle = true;
 	}

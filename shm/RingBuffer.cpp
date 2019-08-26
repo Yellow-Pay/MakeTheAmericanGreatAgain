@@ -10,7 +10,7 @@ RingBuffer_t *rb_init(key_t key) {
 	shmctl(shmid, IPC_STAT, &info);
 	char *address = (char *) shmat(shmid, (void *)0, 0);
 	uint32_t *data = (uint32_t *)address;
-	char *content = (char *)&data[2];
+	char *content = (char *)&data[3];
 	if (info.shm_nattch == 0) {
 		data[0] = data[1] = data[2] = 0;
 	}

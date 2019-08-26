@@ -20,7 +20,7 @@ typedef struct Pool {
 	Connection_t *connections;
 	uint32_t size;
 	uint32_t capacity;
-	list_t *idle_list;
+	List_t *idle_list;
 } Pool_t;
 
 Pool_t *pool_init(int size);
