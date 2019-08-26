@@ -45,12 +45,16 @@ struct RingBuffer {
 	}
 
 	int read(int len, char *output) {
-		uint32_t head = GET_HEAD;
-		uint32_t tail = GET_TAIL;
-		int size = (tail >= head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
+		uint32_t head, tail, new_head;
+		int size;
+retry:
+		head = GET_HEAD;
+		tail = GET_TAIL;
+		size = (tail >= head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
 		if (size < len) {
 			len = size;
 		}
+		if (len == 0) return 0;
 		if (head + len < SHM_DATA_SIZE) {
 			memcpy(output, content + head, len);
 		} else {
@@ -58,24 +62,28 @@ struct RingBuffer {
 			memcpy(output, content + head, remain_length);
 			memcpy(output + remain_length, content, len - remain_length);
 		}
-		uint32_t new_head = (head + len) % SHM_DATA_SIZE;
+		new_head = (head + len) % SHM_DATA_SIZE;
 		if (!__sync_bool_compare_and_swap(&(GET_HEAD), head, new_head)) {
-			return 0;
+			goto retry;
 		}
 		return len;
 	}
 
 	// Write as many as possible when the ringbuffer is full
 	int write(int len, const char *input) {
-		auto head = GET_HEAD;
-		auto tail = GET_TAIL;
-		int size = (head > tail) ? (head - tail - 1) : (head + SHM_DATA_SIZE - tail - 1);
+		uint32_t head, tail, new_tail;
+		int size;
+retry:
+		head = GET_HEAD;
+		tail = GET_TAIL;
+		size = (head > tail) ? (head - tail - 1) : (head + SHM_DATA_SIZE - tail - 1);
 		if (size < len) {
 			len = size;
 		}
-		uint32_t new_tail = (tail + len) % SHM_DATA_SIZE;
+		if (len == 0) return 0;
+		new_tail = (tail + len) % SHM_DATA_SIZE;
 		if (!__sync_bool_compare_and_swap(&(GET_TAIL), tail, new_tail)) {
-			return 0;
+			goto retry;
 		}
 		if (tail + len < SHM_DATA_SIZE) {
 			memcpy(content + tail, input, len);
