@@ -5,14 +5,15 @@
 #include <queue>
 #include <sys/shm.h>
 #include <cstdint>
+#include <atomic>
 
 using namespace std;
 
 #define SHM_SIZE 32
 #define get_idx(srcPort, destPort) srcPort * 65536 + destPort
 #define SHM_DATA_SIZE (SHM_SIZE - 2 * sizeof(uint32_t))
-#define GET_HEAD ((uint32_t *)address)[0];
-#define GET_TAIL ((uint32_t *)address)[1];
+#define GET_HEAD ((uint32_t *)address)[0]
+#define GET_TAIL ((uint32_t *)address)[1]
 
 struct RingBuffer {
 	int shmid;
@@ -42,27 +43,11 @@ struct RingBuffer {
 			shmctl(shmid,IPC_RMID,NULL); 
 		}
 	}
-	/* Head, Tail, content */
-	void movePointer(uint32_t len, int index) {
-		uint32_t* data = (uint32_t*) address;
-		data[index] += len;
-		if (data[index] > SHM_DATA_SIZE) {
-			data[index] -= SHM_DATA_SIZE;
-		}
-	}
-
-	void moveHead(uint32_t len) {
-		movePointer(len, 0);
-	}
-
-	void moveTail(uint32_t len) {
-		movePointer(len, 1);	
-	}
 
 	int read(int len, char *output) {
-		auto head = GET_HEAD;
-		auto tail = GET_TAIL;
-		int size = (tail > head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
+		uint32_t head = GET_HEAD;
+		uint32_t tail = GET_TAIL;
+		int size = (tail >= head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
 		if (size < len) {
 			len = size;
 		}
@@ -73,8 +58,10 @@ struct RingBuffer {
 			memcpy(output, content + head, remain_length);
 			memcpy(output + remain_length, content, len - remain_length);
 		}
-		moveHead(len);
-		// TODO: add multi thread support
+		uint32_t new_head = (head + len) % SHM_DATA_SIZE;
+		if (!__sync_bool_compare_and_swap(&(GET_HEAD), head, new_head)) {
+			return 0;
+		}
 		return len;
 	}
 
@@ -82,9 +69,13 @@ struct RingBuffer {
 	int write(int len, const char *input) {
 		auto head = GET_HEAD;
 		auto tail = GET_TAIL;
-		int size = (head > tail) ? (head - tail) : (head + SHM_DATA_SIZE - tail);
+		int size = (head > tail) ? (head - tail - 1) : (head + SHM_DATA_SIZE - tail - 1);
 		if (size < len) {
 			len = size;
+		}
+		uint32_t new_tail = (tail + len) % SHM_DATA_SIZE;
+		if (!__sync_bool_compare_and_swap(&(GET_TAIL), tail, new_tail)) {
+			return 0;
 		}
 		if (tail + len < SHM_DATA_SIZE) {
 			memcpy(content + tail, input, len);
@@ -93,8 +84,6 @@ struct RingBuffer {
 			memcpy(content + tail, input, remain_length);
 			memcpy(content, input + remain_length, len - remain_length);
 		}
-		moveTail(len);
-		// TODO: add multi thread support
 		return len;
 	}
 };
