@@ -1,7 +1,9 @@
 #include "socket.h"
 #include "RingBuffer.h"
+#include <netinet/in.h>
 #include <signal.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -24,7 +26,7 @@ void init_port_table() {
     shmctl(shmid, IPC_STAT, &info);
     char *address = (char *)shmat(shmid, (void *)0, 0);
     int *port_table_address = (int *)address;
-    if (info.shm_nattach == 0) {
+    if (info.shm_nattch == 0) {
         memset(port_table_address, 0, PORT_NUMBER * sizeof(int));
     }
     port_table_availble = 1;
@@ -53,13 +55,13 @@ make the fd of the reciver the port of reciver.
 int socket(int domain, int type, int protocol) {}
 
 int bind(int fd, const struct sockaddr *addr, socklen_t len) {
-    struct sockaddr_in *addr_in = addr;
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
     int port = addr_in->sin_port;
     if (0 != read_port_table(port)) {
         // current port is unavailable
         return -1;
     }
-    write_port_pid_table(port, getpid());
+    write_port_table(port, getpid());
     return 0;
 }
 
@@ -69,7 +71,7 @@ int listen(int fd, int backlog) {
 
 int connect(int fd, const struct sockaddr *addr, socklen_t len) {
     //	return socketcall_cp(connect, fd, addr, len, 0, 0, 0);
-    struct sockaddr_in *addr_in = addr;
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
     int port = addr_in->sin_port;
     int pid = read_port_table(port);
     write_port_table(port, FD2PORT(fd));
@@ -80,8 +82,9 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 
 void accept_handler(int sig, siginfo_t *siginfo, void *context) { return; }
 
-int accept(int fd, struct sockaddr *restrict addr, socklen_t *restrict len) {
-    struct sockaddr_in *addr_in = addr;
+// int accept(int fd, struct sockaddr *restrict addr, socklen_t *restrict len) {
+int accept(int fd, struct sockaddr *addr, socklen_t *len) {
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
     int server_port = addr_in->sin_port;
     struct sigaction siga;
     // prepare sigaction
@@ -114,14 +117,16 @@ ssize_t recv(int fd, void *buf, size_t len, int flags) {
     return recvfrom(fd, buf, len, flags, 0, 0);
 }
 
-ssize_t recvfrom(int fd, void *restrict buf, size_t len, int flags,
-                 struct sockaddr *restrict addr, socklen_t *restrict alen) {
+// ssize_t recvfrom(int fd, void *restrict buf, size_t len, int flags,
+//                  struct sockaddr *restrict addr, socklen_t *restrict alen) {
+ssize_t recvfrom(int fd, void *buf, size_t len, int flags,
+                 struct sockaddr *addr, socklen_t *alen) {
     RingBuffer_t *reader = NULL;
     if (fd > 1024) { // server
         reader = rb_get(
             get_idx(GET_CLIENT_PORT_FROM_FD(fd), GET_SERVER_PORT_FROM_FD(fd)));
     } else { // client
-        reader = rb_get(client_fd_to_server_fd[fd], FD2PORT(fd));
+        reader = rb_get(get_idx(client_fd_to_server_fd[fd], FD2PORT(fd)));
     }
     return rb_read(reader, len, (char *)buf);
 }
@@ -134,7 +139,7 @@ int close(int fd) {
         reader = rb_get(
             get_idx(GET_CLIENT_PORT_FROM_FD(fd), GET_SERVER_PORT_FROM_FD(fd)));
     } else { // client
-        reader = rb_get(client_fd_to_server_fd[fd], FD2PORT(fd));
+        reader = rb_get(get_idx(client_fd_to_server_fd[fd], FD2PORT(fd)));
     }
     rb_destroy(reader);
     return 0;
