@@ -12,7 +12,6 @@
 
 using namespace std;
 
-#define SHM_SIZE 32
 unordered_map<int, key_t *> src_memo;
 key_t *get_dst_block(int srcPort) {
     if (src_memo.find(srcPort) == src_memo.end()) {
