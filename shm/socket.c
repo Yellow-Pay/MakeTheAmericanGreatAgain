@@ -52,10 +52,10 @@ int read_port_table(int port) {
 	return port_table_address[port];
 }
 
-int get_free_port(int fd) {
+int get_free_port(int idx) {
 	for (int i = 0; i < PORT_NUMBER; i++) {
 		if (0 != read_port_table(i)) {
-			write_port_table(i, fd);
+			write_port_table(i, idx);
 			return i;
 		}
 	}
@@ -90,7 +90,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 	int server_port = addr_in->sin_port;
 	// TODO: check when fail
 	int pid = read_port_table(server_port);
-	int client_port = get_free_port(fd);
+	int client_port = get_free_port(FD2PORT(fd));
 	if (client_port == 0) return -1;
 	int idx = (server_port << 16) | client_port;
 	client_fd_to_idx[fd] = idx;
