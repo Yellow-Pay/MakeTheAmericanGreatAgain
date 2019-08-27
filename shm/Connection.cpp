@@ -1,79 +1,124 @@
-#include "Connection.h"
-#include <cstring>
+#include "Pool.h"
+#include <atomic>
 #include <cassert>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
 #include <map>
+#include <queue>
+#include <sys/shm.h>
+#include <unordered_map>
 
 using namespace std;
 
-Pool_t *ConnectionPool;
-map<uint32_t, Connection_t *> ConnectionMap;
-//TODO: shared map
-
-int conn_open(uint32_t src_port, uint32_t dst_port) {
-	if (!ConnectionPool) {
-		ConnectionPool = pool_init(POOL_SIZE); 
-	}
-	uint32_t idx = get_idx(src_port, dst_port);
-	if (ConnectionMap.find(idx) != ConnectionMap.end()) {
-		// Already connected
-		return -1;
-	}
-	Connection_t *conn = conn_create(ConnectionPool);
-	ConnectionMap[idx] = conn;
-	conn->idle = false;
-	return 0;
+#define SHM_SIZE 32
+unordered_map<int, key_t *> src_memo;
+key_t *get_dst_block(int srcPort) {
+    if (src_memo.find(srcPort) == src_memo.end()) {
+        auto shmid = shmget(srcPort, SHM_SIZE, 0666 | IPC_CREAT);
+        auto address = (key_t *)shmat(shmid, (void *)0, 0);
+        src_memo[srcPort] = address;
+        return address;
+    } else {
+        return src_memo[srcPort];
+    }
 }
-
-Connection_t *conn_create(Pool_t *pool) {
-	Connection_t *conn = NULL;
-	uint32_t size = pool->size;
-	uint32_t capacity = pool->capacity;
-	if (size == capacity) {
-		expandPool(pool);
-	}
-	uint32_t idx = size;
-	if (!list_empty(pool->idle_list)) {
-		idx = list_front(pool->idle_list);
-		list_pop(pool->idle_list);
-	}
-	conn = &pool->connections[idx];
-	if (!conn->rb) {
-		conn->rb = rb_init(idx);
-	}
-	pool->size++;
-	return conn;
+key_t get_idx(int srcPort, int dstPort) {
+    auto key_array = get_dst_block(srcPort);
+    key_t ret = key_array[dstPort];
+    if (ret == 0) {
+        ret = key_array[dstPort] = pool_get();
+    }
+    return ret;
 }
+#define SHM_DATA_SIZE (SHM_SIZE - 2 * sizeof(uint32_t))
+#define GET_HEAD ((uint32_t *)address)[0]
+#define GET_TAIL ((uint32_t *)address)[1]
 
-void conn_remove(Pool_t *pool, uint32_t src_port, uint32_t dst_port) {
-	uint32_t idx = get_idx(src_port, dst_port);
-	assert(ConnectionMap.find(idx) != ConnectionMap.end());
-	Connection_t *conn = ConnectionMap[idx];
-	conn->idle = true;
-	uint32_t idle_idx = (conn - ConnectionPool->connections);
-	list_push(pool->idle_list, idle_idx);
-	ConnectionMap.erase(idx);
-}
+struct RingBuffer {
+    int shmid;
+    int index;
+    char *address;
+    char *content;
+    RingBuffer(int idx) {
+        index = idx;
+        key_t key = idx << 16;
+        shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
+        shmid_ds info;
+        shmctl(shmid, IPC_STAT, &info);
+        address = (char *)shmat(shmid, (void *)0, 0);
+        uint32_t *data = (uint32_t *)address;
+        content = (char *)&data[2];
+        if (info.shm_nattch == 0) {
+            data[0] = 0;
+            data[1] = 0;
+        }
+    }
+    ~RingBuffer() { pool_release(index); }
 
-Pool_t *pool_init(int size) {
-	Pool_t *pool = (Pool_t *)malloc(sizeof(Pool_t));
-	if (!pool) return NULL;
-	pool->connections = (Connection_t *)malloc(sizeof(Connection_t) * size);
-	if (!pool->connections) {
-		free(pool);
-		return NULL;
-	}
-	pool->idle_list = (List_t *)malloc(sizeof(List_t));
-	if (!pool->idle_list) {
-		free(pool->connections);
-		free(pool);
-		return NULL;
-	}
-	memset(pool->connections, 0, sizeof(Connection_t) * size);
-	memset(pool->idle_list, 0, sizeof(List_t));
-	for (int i = 0; i < size; i++) {
-		pool->connections[i].idle = true;
-	}
-	pool->size = 0;
-	pool->capacity = size;
-	return pool;
-}
+    int read(int len, char *output) {
+        uint32_t head, tail, new_head;
+        int size;
+    retry:
+        head = GET_HEAD;
+        tail = GET_TAIL;
+        size = (tail >= head) ? (tail - head) : (tail + SHM_DATA_SIZE - head);
+        if (size < len) {
+            len = size;
+        }
+        if (len == 0)
+            return 0;
+        if (head + len < SHM_DATA_SIZE) {
+            memcpy(output, content + head, len);
+        } else {
+            int remain_length = SHM_DATA_SIZE - head;
+            memcpy(output, content + head, remain_length);
+            memcpy(output + remain_length, content, len - remain_length);
+        }
+        new_head = (head + len) % SHM_DATA_SIZE;
+        if (!__sync_bool_compare_and_swap(&(GET_HEAD), head, new_head)) {
+            goto retry;
+        }
+        return len;
+    }
+
+    // Write as many as possible when the ringbuffer is full
+    int write(int len, const char *input) {
+        uint32_t head, tail, new_tail;
+        int size;
+    retry:
+        head = GET_HEAD;
+        tail = GET_TAIL;
+        size = (head > tail) ? (head - tail - 1)
+                             : (head + SHM_DATA_SIZE - tail - 1);
+        if (size < len) {
+            len = size;
+        }
+        if (len == 0)
+            return 0;
+        new_tail = (tail + len) % SHM_DATA_SIZE;
+        if (!__sync_bool_compare_and_swap(&(GET_TAIL), tail, new_tail)) {
+            goto retry;
+        }
+        if (tail + len < SHM_DATA_SIZE) {
+            memcpy(content + tail, input, len);
+        } else {
+            int remain_length = SHM_DATA_SIZE - tail;
+            memcpy(content + tail, input, remain_length);
+            memcpy(content, input + remain_length, len - remain_length);
+        }
+        return len;
+    }
+};
+
+struct Connection {
+    uint32_t src;
+    uint32_t dst;
+    RingBuffer readRB, writeRB;
+    Connection(uint32_t src_port, uint32_t dst_port)
+        : src(src_port), dst(dst_port), readRB(get_idx(src, dst)),
+          writeRB(get_idx(dst, src)) {}
+    ~Connection() {}
+    int read(int len, char *output) { return readRB.read(len, output); }
+    int write(int len, const char *input) { return writeRB.write(len, input); }
+};
