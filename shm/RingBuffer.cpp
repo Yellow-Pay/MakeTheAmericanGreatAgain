@@ -3,6 +3,8 @@
 #include <atomic>
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
+#include <iostream>
 #include <unordered_map>
 
 using namespace std;
@@ -10,22 +12,24 @@ using namespace std;
 unordered_map<int, key_t *> src_memo;
 const int PORT_NUMBER = 65536;
 key_t *get_dst_block(int srcPort) {
-    if (src_memo.find(srcPort) == src_memo.end()) {
-        auto shmid = shmget(srcPort, PORT_NUMBER * sizeof(key_t), 0666 | IPC_CREAT);
-        auto address = (key_t *)shmat(shmid, (void *)0, 0);
-        src_memo[srcPort] = address;
-        return address;
-    } else {
-        return src_memo[srcPort];
-    }
+	if (src_memo.find(srcPort) == src_memo.end()) {
+		auto shmid = shmget(srcPort, PORT_NUMBER * sizeof(key_t), 0666 | IPC_CREAT);
+		auto address = (key_t *)shmat(shmid, (void *)0, 0);
+		src_memo[srcPort] = address;
+		return address;
+	} else {
+		return src_memo[srcPort];
+	}
 }
+
 key_t get_idx(int srcPort, int dstPort) {
-    auto key_array = get_dst_block(srcPort);
-    key_t ret = key_array[dstPort];
-    if (ret == 0) {
-        ret = key_array[dstPort] = pool_get();
-    }
-    return ret;
+	//	printf("srcPort = 0x%lx, dstPort = 0x%lx\n", srcPort, dstPort);
+	auto key_array = get_dst_block(srcPort);
+	key_t ret = key_array[dstPort];
+	if (ret == 0) {
+		ret = key_array[dstPort] = pool_get();
+	}
+	return ret;
 }
 
 unordered_map<int, RingBuffer_t*> rb_memo;
@@ -49,6 +53,7 @@ RingBuffer_t *rb_init(int idx) {
 	if (info.shm_nattch == 0) {
 		data[0] = data[1] = data[2] = 0;
 	}
+	//printf("init - rb->address = 0x%lx\n", address);
 	rb->address = address;
 	rb->content = content; 
 	rb->index = idx;
@@ -91,6 +96,9 @@ int rb_write(RingBuffer_t *rb, int len, char *input) {
 	uint32_t head, tail, old_tail, new_tail;
 	int size;
 retry:
+	//printf("rb = 0x%lx\n", rb);
+	//printf("rb-> address = 0x%lx\n", rb->address);
+
 	head = GET_HEAD(rb);
 	tail = GET_TAIL(rb);
 	old_tail = GET_OLDTAIL(rb);
