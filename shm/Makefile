@@ -17,9 +17,6 @@ obj-o=$(obj-cpp:.cpp=.o) $(obj-c:.c=.o)
 libshm.so: $(obj-o)
 	$(CXX) $^ -fPIC -shared -o $@
 
-test: TestConcurrency.cpp $(obj-o)
-	$(CXX) $^ $(CFLAGS) -o $@ -lpthread
-
 %.o: %.cpp
 	$(CXX) -c $(CFLAGS) $^ -o $@
 
@@ -27,4 +24,4 @@ test: TestConcurrency.cpp $(obj-o)
 	$(CXX) -c $(CFLAGS) $^ -o $@
 	
 clean:
-	rm -f $(obj-o) test
+	rm -f $(obj-o) libshm.so
