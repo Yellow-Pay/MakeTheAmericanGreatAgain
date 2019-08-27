@@ -1,68 +1,77 @@
-#include <future>
-#include <cstring>
-#include "RingBuffer.h"
 #include "Connection.h"
+#include "RingBuffer.h"
 #include <cassert>
-#include <iostream>
-#include <vector>
-#include <random>
 #include <chrono>
+#include <cstring>
+#include <future>
+#include <iostream>
+#include <random>
+#include <vector>
 
 using namespace std;
 
 const int thread_number = 100;
 
 void sleep_random_time() {
-    std::mt19937_64 eng{std::random_device{}()};  // or seed however you want
+    std::mt19937_64 eng{std::random_device{}()}; // or seed however you want
     std::uniform_int_distribution<> dist{10, 100};
     std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
 }
 
-void read_concurrency(RingBuffer_t *rb) {
+void read_concurrency() {
+    Connection c(8000, 8008);
     vector<std::future<int>> v(thread_number);
     for (int i = 0; i < thread_number; ++i) {
-        v[i] = std::async([=]() -> int {
+        v[i] = std::async([&]() -> int {
             sleep_random_time();
             char buf[100];
             memset(buf, 0, 100);
-            auto ret = rb_read(rb, 1, buf);
-            cout << "read: " << int (buf[0]) << endl;
+            auto ret = c.read(1, buf);
+            cout << "read: " << int(buf[0]) << endl;
             assert(buf[1] == '\0');
             return ret;
         });
     }
 }
-void write_concurrency(RingBuffer_t *rb) {
+void write_concurrency() {
+    Connection c(8008, 8000);
     vector<std::future<int>> v(thread_number);
     for (int i = 0; i < thread_number; ++i) {
-        v[i] = std::async([=]() -> int {
+        v[i] = std::async([&]() -> int {
             char buf = i;
             sleep_random_time();
-            auto ret = rb_write(rb, 1, &buf);
+            auto ret = c.write(1, &buf);
             cout << "write: " << i << endl;
             return ret;
         });
     }
 }
 
+/*
+Test read and write to the end of ringbuffer and read and write too much
+*/
 void TestNonConcurrency() {
-    auto writer = rb_init(1234);
-    auto reader = rb_init(1234);
+    Connection writer(8009, 8001);
+    Connection reader(8001, 8009);
     char buf[100];
-	cout << "write success: " << rb_write(writer, 12, "abcdefghijkl") << endl;
-	memset(buf, 0, 100);
-	cout << "read success: " << rb_read(reader, 5, buf) << endl;
-	cout << "Data read in memory: " << buf << endl; 
-	cout << "write success: " << rb_write(writer, 5, "12345") << endl;
-	memset(buf, 0, 100);
-	cout << "read success: " << rb_read(reader, 12, buf) << endl;
-	cout << "Data read in memory: " << buf << endl;
+    int ret = writer.write(26, "abcdefghijklmnopqrstuvwxyz");
+    cout << "ret: " << ret << endl;
+    assert(ret == SHM_SIZE - 3 * sizeof(uint32_t) - 1);
+    memset(buf, 0, 100);
+    ret = reader.read(10, buf);
+    assert(ret == 10);
+    cout << "buf: " << buf << endl;
+    assert(strcmp(buf, "abcdefghij") == 0);
+    ret = writer.write(10, "0123456789");
+    assert(ret == 10);
+    memset(buf, 0, 100);
+    assert(19 == reader.read(26, buf));
+    cout << "Data read in memory: " << buf << endl;
+    assert(strcmp(buf, "klmnopqrs0123456789") == 0);
 }
 void TestConcurrency() {
-    auto writer = rb_init(1234);
-    auto reader = rb_init(1234);
-    std::async(write_concurrency, writer);
-    std::async(read_concurrency, reader);
+    std::async(write_concurrency);
+    std::async(read_concurrency);
 }
 void onlyWrite() {
     Connection writer(8008, 8000);
@@ -73,6 +82,6 @@ void onlyWrite() {
     }
 }
 int main() {
-    onlyWrite();
+    TestNonConcurrency();
     return 0;
 }

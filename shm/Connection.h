@@ -1,6 +1,9 @@
 #ifndef __CONNECTION_H
 #define __CONNECTION_H
 
+#include <cstdint>
+#include "RingBuffer.h"
+
 struct Connection {
     uint32_t src;
     uint32_t dst;
@@ -8,8 +11,8 @@ struct Connection {
     RingBuffer_t *writeRB;
     Connection(uint32_t src_port, uint32_t dst_port);
     ~Connection();
-    int read(int len, char *output); { return rb_read(readRB, len, output); }
-    int write(int len, char *input); { return rb_write(writeRB, len, input); }
+    int read(int len, char *output);
+    int write(int len, char *input);
 };
 
 #endif
