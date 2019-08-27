@@ -7,22 +7,24 @@ ifeq ($(UNAME),Darwin)
 CXX=g++ -g -std=c++11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
 endif
 
+CFLAGS=-fPIC
+
 obj-cpp=RingBuffer.cpp Connection.cpp Pool.cpp
 obj-c=socket.c
 
 obj-o=$(obj-cpp:.cpp=.o) $(obj-c:.c=.o)
 
-all: $(obj-o)
-	$(CXX) $^ -o main
+libshm.so: $(obj-o)
+	$(CXX) $^ -fPIC -shared -o $@
 
 test: TestConcurrency.cpp $(obj-o)
-	$(CXX) $^ -o $@ -lpthread
+	$(CXX) $^ $(CFLAGS) -o $@ -lpthread
 
 %.o: %.cpp
-	$(CXX) -c $^ -o $@
+	$(CXX) -c $(CFLAGS) $^ -o $@
 
 %.o: %.c
-	$(CXX) -c $^ -o $@
+	$(CXX) -c $(CFLAGS) $^ -o $@
 	
 clean:
 	rm -f $(obj-o) test
