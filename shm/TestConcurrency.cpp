@@ -11,18 +11,17 @@
 using namespace std;
 
 const int thread_number = 100;
-
-void sleep_random_time() {
+void sleep_random_time(int left = 10, int right = 100) {
     std::mt19937_64 eng{std::random_device{}()}; // or seed however you want
-    std::uniform_int_distribution<> dist{10, 100};
+    std::uniform_int_distribution<> dist{left, right};
     std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
 }
 
 void read_concurrency() {
-    Connection c(8000, 8008);
+    Connection c(8009, 8001);
     vector<std::future<int>> v(thread_number);
     for (int i = 0; i < thread_number; ++i) {
-        v[i] = std::async([&]() -> int {
+        v[i] = std::async([&c, i]() -> int {
             sleep_random_time();
             char buf[100];
             memset(buf, 0, 100);
@@ -34,10 +33,10 @@ void read_concurrency() {
     }
 }
 void write_concurrency() {
-    Connection c(8008, 8000);
+    Connection c(8001, 8009);
     vector<std::future<int>> v(thread_number);
     for (int i = 0; i < thread_number; ++i) {
-        v[i] = std::async([&]() -> int {
+        v[i] = std::async([&c, i]() -> int {
             char buf = i;
             sleep_random_time();
             auto ret = c.write(1, &buf);
@@ -70,8 +69,8 @@ void TestNonConcurrency() {
     assert(strcmp(buf, "klmnopqrs0123456789") == 0);
 }
 void TestConcurrency() {
-    std::async(write_concurrency);
-    std::async(read_concurrency);
+    auto a = std::async(write_concurrency);
+    auto b = std::async(read_concurrency);
 }
 void onlyWrite() {
     Connection writer(8008, 8000);
@@ -82,6 +81,6 @@ void onlyWrite() {
     }
 }
 int main() {
-    TestNonConcurrency();
+    TestConcurrency();
     return 0;
 }
