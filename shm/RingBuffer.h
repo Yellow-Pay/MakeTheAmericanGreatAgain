@@ -17,6 +17,7 @@
 
 typedef struct RingBuffer {
 	int shmid;
+	int index;
 	char *address;
 	char *content;
 } RingBuffer_t;

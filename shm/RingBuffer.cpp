@@ -1,9 +1,11 @@
 #include "RingBuffer.h"
+#include "Pool.h"
 #include <atomic>
 #include <cstring>
 #include <cstdlib>
 
-RingBuffer_t *rb_init(key_t key) {
+RingBuffer_t *rb_init(int idx) {
+	key_t key = idx << 16;
 	RingBuffer_t *rb = (RingBuffer_t *)malloc(sizeof(RingBuffer_t));
 	if (!rb) return NULL;
 	int shmid = shmget(key, SHM_SIZE, 0666|IPC_CREAT);
@@ -17,17 +19,13 @@ RingBuffer_t *rb_init(key_t key) {
 	}
 	rb->address = address;
 	rb->content = content; 
+	rb->index = idx;
 	rb->shmid = shmid;
 	return rb;
 }
 
 void rb_destroy(RingBuffer_t *rb) {
-	shmdt(rb->address);
-	shmid_ds info;
-	shmctl(rb->shmid, IPC_STAT, &info);
-	if (info.shm_nattch == 0) {
-		shmctl(rb->shmid, IPC_RMID, NULL);
-	}
+	pool_release(rb->index);
 }
 
 int rb_read(RingBuffer_t *rb, int len, char *output) {
