@@ -129,5 +129,13 @@ ssize_t recvfrom(int fd, void *restrict buf, size_t len, int flags,
 int close(int fd) {
     write_port_table(GET_CLIENT_PORT_FROM_FD(fd), 0);
     write_port_table(GET_SERVER_PORT_FROM_FD(fd), 0);
+    RingBuffer_t *reader = NULL;
+    if (fd > 1024) { // server
+        reader = rb_get(
+            get_idx(GET_CLIENT_PORT_FROM_FD(fd), GET_SERVER_PORT_FROM_FD(fd)));
+    } else { // client
+        reader = rb_get(client_fd_to_server_fd[fd], FD2PORT(fd));
+    }
+    rb_destroy(reader);
     return 0;
 }
