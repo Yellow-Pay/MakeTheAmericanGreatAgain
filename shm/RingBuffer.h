@@ -22,7 +22,7 @@ typedef struct RingBuffer {
 	char *content;
 } RingBuffer_t;
 
-RingBuffer_t *rb_init(int key);
+RingBuffer_t *rb_init(int idx);
 void rb_destroy(RingBuffer_t *rb);
 int rb_read(RingBuffer_t *rb, int len, char *output);
 int rb_write(RingBuffer_t *rb, int len, char *input);

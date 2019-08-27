@@ -1,4 +1,5 @@
 #include <future>
+#include <cstring>
 #include "RingBuffer.h"
 #include <cassert>
 #include <iostream>
