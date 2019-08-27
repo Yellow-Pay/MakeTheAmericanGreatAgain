@@ -52,7 +52,7 @@ int read_port_table(int port) {
 make the fd of the sender the port of sender,
 make the fd of the reciver the port of reciver.
 */
-int socket(int domain, int type, int protocol) {}
+//int socket(int domain, int type, int protocol) {}
 
 int bind(int fd, const struct sockaddr *addr, socklen_t len) {
     struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
@@ -67,6 +67,7 @@ int bind(int fd, const struct sockaddr *addr, socklen_t len) {
 
 int listen(int fd, int backlog) {
     //	return socketcall(listen, fd, backlog, 0, 0, 0, 0);
+    return 0;
 }
 
 int connect(int fd, const struct sockaddr *addr, socklen_t len) {
@@ -78,6 +79,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
     client_fd_to_server_fd[fd] = port;
     // send signal to pid
     kill(pid, SIGUSR1);
+    return 0;
 }
 
 void accept_handler(int sig, siginfo_t *siginfo, void *context) { return; }

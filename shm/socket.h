@@ -31,7 +31,9 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t recv(int sockfd, void *buf, size_t len, int flags);
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		struct sockaddr *src_addr, socklen_t *addrlen);
+extern "C" {
 int close(int fd);
+}
 //struct hostent *gethostbyname(const char *name);
 //struct hostent *gethostbyaddr(const void *addr, socklen_t len, int type);
 

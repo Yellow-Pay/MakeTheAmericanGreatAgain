@@ -16,7 +16,7 @@ all: $(obj-o)
 	$(CXX) $^ -o main
 
 test: TestConcurrency.cpp $(obj-o)
-	$(CXX) $^ -o $@
+	$(CXX) $^ -o $@ -lpthread
 
 %.o: %.cpp
 	$(CXX) -c $^ -o $@
