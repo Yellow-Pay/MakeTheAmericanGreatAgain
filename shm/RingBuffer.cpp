@@ -3,6 +3,38 @@
 #include <atomic>
 #include <cstring>
 #include <cstdlib>
+#include <unordered_map>
+
+using namespace std;
+
+unordered_map<int, key_t *> src_memo;
+const int PORT_NUMBER = 65536;
+key_t *get_dst_block(int srcPort) {
+    if (src_memo.find(srcPort) == src_memo.end()) {
+        auto shmid = shmget(srcPort, PORT_NUMBER * sizeof(key_t), 0666 | IPC_CREAT);
+        auto address = (key_t *)shmat(shmid, (void *)0, 0);
+        src_memo[srcPort] = address;
+        return address;
+    } else {
+        return src_memo[srcPort];
+    }
+}
+key_t get_idx(int srcPort, int dstPort) {
+    auto key_array = get_dst_block(srcPort);
+    key_t ret = key_array[dstPort];
+    if (ret == 0) {
+        ret = key_array[dstPort] = pool_get();
+    }
+    return ret;
+}
+
+unordered_map<int, RingBuffer_t*> rb_memo;
+RingBuffer_t* rb_get(int k) {
+	if (rb_memo.find(k) == rb_memo.end()) {
+		rb_memo[k] = rb_init(k);
+	}
+	return rb_memo[k];
+}
 
 RingBuffer_t *rb_init(int idx) {
 	key_t key = idx << 16;

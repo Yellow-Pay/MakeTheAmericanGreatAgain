@@ -102,10 +102,10 @@ ssize_t sendto(int fd, const void *buf, size_t len, int flags,
                const struct sockaddr *addr, socklen_t alen) {
     RingBuffer_t *writer = NULL;
     if (fd > 1024) { // server
-        writer = rb_init(
+        writer = rb_get(
             get_idx(GET_SERVER_PORT_FROM_FD(fd), GET_CLIENT_PORT_FROM_FD(fd)));
     } else { // client
-        writer = rb_init(get_idx(FD2PORT(fd), client_fd_to_server_fd[fd]));
+        writer = rb_get(get_idx(FD2PORT(fd), client_fd_to_server_fd[fd]));
     }
     return rb_write(writer, len, (char *)buf);
 }
@@ -118,10 +118,10 @@ ssize_t recvfrom(int fd, void *restrict buf, size_t len, int flags,
                  struct sockaddr *restrict addr, socklen_t *restrict alen) {
     RingBuffer_t *reader = NULL;
     if (fd > 1024) { // server
-        reader = rb_init(
+        reader = rb_get(
             get_idx(GET_CLIENT_PORT_FROM_FD(fd), GET_SERVER_PORT_FROM_FD(fd)));
     } else { // client
-        reader = rb_init(client_fd_to_server_fd[fd], FD2PORT(fd));
+        reader = rb_get(client_fd_to_server_fd[fd], FD2PORT(fd));
     }
     return rb_read(reader, len, (char *)buf);
 }
