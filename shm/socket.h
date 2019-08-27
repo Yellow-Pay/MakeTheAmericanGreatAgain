@@ -3,6 +3,12 @@
 
 typedef unsigned short sa_family_t;
 typedef unsigned socklen_t;
+struct sockaddr_in {
+	sa_family_t sin_family;
+	in_port_t sin_port;
+	struct in_addr sin_addr;
+	uint8_t sin_zero[8];
+};
 struct sockaddr {
 	sa_family_t sa_family;
 	char sa_data[14];
