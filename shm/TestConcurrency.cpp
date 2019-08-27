@@ -1,6 +1,7 @@
 #include <future>
 #include <cstring>
 #include "RingBuffer.h"
+#include "Connection.h"
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -64,14 +65,14 @@ void TestConcurrency() {
     std::async(read_concurrency, reader);
 }
 void onlyWrite() {
-    auto writer = rb_init(1234);
+    Connection writer(8008, 8000);
     for (int i = 0; i < 50; ++i) {
         char buf = 'a';
-        int ret = rb_write(writer, 1, &buf);
+        int ret = writer.write(1, &buf);
         cout << "write " << i << ", " << ret << endl;
     }
 }
 int main() {
-    TestConcurrency();
+    onlyWrite();
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "Pool.h"
+#include "Connection.h"
 #include "RingBuffer.h"
 #include <atomic>
 #include <cassert>
@@ -32,18 +33,14 @@ key_t get_idx(int srcPort, int dstPort) {
     return ret;
 }
 
-struct Connection {
-    uint32_t src;
-    uint32_t dst;
-    RingBuffer_t *readRB;
-    RingBuffer_t *writeRB;
-    Connection(uint32_t src_port, uint32_t dst_port) {
-	    src = src_port;
-	    dst = dst_port;
-	    readRB = rb_init(get_idx(src, dst));
-	    writeRB = rb_init(get_idx(dst, src));
-    }
-    ~Connection() {}
-    int read(int len, char *output) { return rb_read(readRB, len, output); }
-    int write(int len, char *input) { return rb_write(writeRB, len, input); }
-};
+Connection::Connection(uint32_t src_port, uint32_t dst_port) {
+    src = src_port;
+    dst = dst_port;
+    readRB = rb_init(get_idx(src, dst));
+    writeRB = rb_init(get_idx(dst, src));
+}
+
+Connection::~Connection() {
+    rb_destory(readRB);
+    rb_destroy(writeRB);
+}
