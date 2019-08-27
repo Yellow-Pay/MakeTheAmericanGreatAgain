@@ -7,6 +7,7 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <assert.h>
 
 #define GET_SERVER_PORT_FROM_FD(x) ((x)&0xFFFF)
 #define GET_CLIENT_PORT_FROM_FD(x) ((x) >> 16)
@@ -24,8 +25,7 @@ void init_port_table() {
                        0666 | IPC_CREAT);
     shmid_ds info;
     shmctl(shmid, IPC_STAT, &info);
-    char *address = (char *)shmat(shmid, (void *)0, 0);
-    int *port_table_address = (int *)address;
+    port_table_address  = (int *)shmat(shmid, (void *)0, 0);
     if (info.shm_nattch == 0) {
         memset(port_table_address, 0, PORT_NUMBER * sizeof(int));
     }
@@ -45,6 +45,8 @@ int read_port_table(int port) {
         // TODO: multithread support
         init_port_table();
     }
+    assert(port >= 0);
+    assert(port < PORT_NUMBER);
     return port_table_address[port];
 }
 
@@ -94,6 +96,7 @@ int accept(int fd, struct sockaddr *addr, socklen_t *len) {
     siga.sa_flags |= SA_SIGINFO; // get detail info
 
     sigaction(SIGUSR1, &siga, NULL);
+    pause();
     // wait for signal
     int client_port = addr_in->sin_port;
     return (client_port << 16) + server_port;
