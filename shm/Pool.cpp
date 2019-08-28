@@ -9,10 +9,14 @@ using index_type = uint32_t;
 const int CHANNEL_SIZE = 4096 - META_FILED_SIZE;
 
 /*
-   | dummy head | content | next channel key |
-   |  sizeof(index_type) bytes  | pool_size * sizeof(index_type) |
-   sizeof(index_type) bytes |
-   */
+The Channel is the basic element of Pool, and remaps to a shared memory segment.
+The Pool is a list of Chaanel in fact.
+
+The channel maintains a free-list in its address.
+	memory map:
+   |        dummy head          |        free-list               | next channel key         |
+   |  sizeof(index_type) bytes  | pool_size * sizeof(index_type) | sizeof(index_type) bytes |
+*/
 struct Channel {
 	index_type *address = nullptr;
 	std::shared_ptr<Channel> next = nullptr;
@@ -65,7 +69,6 @@ retry:
 		if (!__sync_bool_compare_and_swap(&address[0], ret, new_next)) {
 			goto retry;
 		}
-		//std::cout << "Channel.get: " << ret << std::endl;
 		return ret;
 	}
 	void release(int index) {
@@ -80,16 +83,21 @@ retry:
 	}
 };
 
+/*
+Every process maintains a Pool, which remaps to a global shared memory.
+The pool is responsible for allocing and free index to the process which revokes pool.get().
+The process could access an ringbuffer according to the index.
+*/
 struct Pool {
 	std::shared_ptr<Channel> head;
 	Pool() { head = std::make_shared<Channel>(POOL_SHM_KEY); }
+	/* alloc a free index, enlarge the pool if neccessary. */
 	int get() {
 		auto current = head;
 		int prefix = 0;
 		while (true) {
 			int r = current->get();
 			if (r > 0) {
-				//std::cout << "Pool.get: " << r << std::endl;
 				return prefix + r;
 			}
 			prefix += current->size;
@@ -100,6 +108,7 @@ struct Pool {
 		}
 		return 0;
 	}
+	/* release a free index, add it to free list */
 	void release(int index) {
 		auto current = head;
 		while (index > current->size) {
