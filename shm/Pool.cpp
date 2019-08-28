@@ -4,7 +4,7 @@
 const int POOL_SHM_KEY = 0x3f3f3f3f;
 const int META_FILED_SIZE = 2;
 using index_type = uint32_t;
-const int CHANNEL_SIZE = 16;
+const int CHANNEL_SIZE = 4096 - META_FILED_SIZE;
 
 /*
    | dummy head | content | next channel key |

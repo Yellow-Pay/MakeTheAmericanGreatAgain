@@ -1,2 +1,0 @@
-./micro-shm
-./micro-socket
