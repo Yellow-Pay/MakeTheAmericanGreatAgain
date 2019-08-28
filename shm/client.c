@@ -33,10 +33,13 @@ int main(int argc, char const *argv[]) {
 		printf("\nConnection Failed %d\n", ret);
 		return -1;
 	}
-	send(sock, hello, strlen(hello), 0);
-	printf("Hello message sent\n");
-	valread = read(sock, buffer, 1024);
+	ret = send(sock, hello, strlen(hello), 0);
+	printf("Hello message sent: %d\n", ret);
+	sleep(6);
+	valread = recv(sock, buffer, 1024, 0);
+	printf("Read successful bytes: %d\n", valread);
 	printf("%s\n", buffer);
 	sleep(5);
+	close(sock);
 	return 0;
 }

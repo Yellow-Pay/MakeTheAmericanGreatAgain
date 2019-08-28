@@ -145,6 +145,9 @@ ssize_t send(int fd, const void *buf, size_t len, int flags) {
 
 ssize_t sendto(int fd, const void *buf, size_t len, int flags,
 			const struct sockaddr *addr, socklen_t alen) {
+#ifndef NDEBUG
+	printf("socket send API: \n");
+#endif
 	RingBuffer_t *writer = NULL;
 	if (fd < 1024) {
 		fd = client_fd_to_idx[fd];
