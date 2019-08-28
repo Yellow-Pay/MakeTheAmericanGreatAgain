@@ -69,7 +69,7 @@ void server() {
 		perror("accept"); 
 		exit(EXIT_FAILURE); 
 	} 
-	printf("address port: %d", address.sin_port);
+	printf("address port: %d\n", address.sin_port);
     std::vector<std::future<int>> f(thread_number);
     for (int i = 0; i < thread_number; ++i) {
         f[i] = std::async([=]() -> int {
@@ -85,7 +85,7 @@ void server() {
     int total_read = std::accumulate(f.begin(), f.end(), 0, add_future);
 	close(new_socket);
 	auto end = get_time();
-    cout << "Server: Total read bytes: " << total_read << ", cost: " << end - start << endl;
+    cout << "\nServer: Total read bytes: " << total_read << ", cost: " << end - start << endl;
 }
 
 int client() {
@@ -126,7 +126,7 @@ int client() {
     int total_write = std::accumulate(f.begin(), f.end(), 0, add_future);
 	close(sock);
 	auto end = get_time();
-    cout << "Client: Total read bytes: " << total_write << ", cost: " << end - start << endl;
+    cout << "\nClient: Total read bytes: " << total_write << ", cost: " << end - start << endl;
 	return 0;
 }
 
@@ -138,8 +138,14 @@ int main(int argc, char const *argv[])
 	if (pid == 0) {
 		server();
 	} else {
-        sleep(5);
-        client();
+		int pid2 = fork();
+		if (pid2 == 0) {
+			sleep(1);
+			client();
+		} else {
+			waitpid(pid, 0, 0);
+			waitpid(pid2, 0, 0);
+		}
 	}
     return 0;
 }
