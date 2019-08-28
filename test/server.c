@@ -25,6 +25,7 @@ int server() {
 	address.sin_family = AF_INET; 
 	address.sin_addr.s_addr = INADDR_ANY; 
 	address.sin_port = htons( PORT ); 
+	printf("port = %d\n", address.sin_port);
 
 	if (bind(server_fd, (struct sockaddr *)&address,  
 					sizeof(address))<0) 

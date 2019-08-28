@@ -57,8 +57,8 @@ int read_port_table(int port) {
 }
 
 int get_free_port(int idx) {
-	for (int i = 0; i < PORT_NUMBER; i++) {
-		if (0 != read_port_table(i)) {
+	for (int i = 1; i < PORT_NUMBER; i++) {
+		if (0 == read_port_table(i)) {
 			write_port_table(i, idx);
 			return i;
 		}
@@ -80,7 +80,7 @@ int bind(int fd, const struct sockaddr *addr, socklen_t len) {
 		return -1;
 	}
 	write_port_table(port, getpid());
-	printf("socket bind API: write_port_table: %d\n", read_port_table(port));
+	//printf("socket bind API: port = %d, write_port_table: %d\n", port, read_port_table(port));
 	return 0;
 }
 
@@ -93,24 +93,27 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 	//	return socketcall_cp(connect, fd, addr, len, 0, 0, 0);
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 	int server_port = addr_in->sin_port;
-	// TODO: check when fail
 	uint32_t pid, idx;
-	do {
-		pid = read_port_table(server_port);
+	pid = read_port_table(server_port);
 #ifndef NDEBUG
-		printf("socket connet API: server pid: %u\n", pid);
+	//printf("socket connet API: server pid: %u\n", pid);
 #endif
-		if (pid >= (1 << MAX_PID_BITS)) {	// the remote port is connected by another client
-			return  -1;
-		}
-		if (pid == 0) { // the remote is not open
-			return -2;
-		}
-		int client_port = get_free_port(FD2PORT(fd));
-		if (client_port == 0) return -1;
-		idx = (server_port << 16) | client_port;
-		client_fd_to_idx[fd] = idx;
-	} while (!__sync_bool_compare_and_swap(read_port_table_address(server_port), pid, idx));
+	if (pid >= (1 << MAX_PID_BITS)) {	// the remote port is connected by another client
+		return  -1;
+	}
+	if (pid == 0) { // the remote is not open
+		return -2;
+	}
+	int client_port = get_free_port(FD2PORT(fd));
+	if (client_port == 0) return -1;
+	idx = (server_port << 16) | client_port;
+	if (!__sync_bool_compare_and_swap(read_port_table_address(server_port), pid, idx)) {
+	//	printf("Failed - server_port = %d\n", server_port);
+	//	printf("pid = %d, ans = %d\n", pid, read_port_table(server_port));
+		write_port_table(client_port, 0);
+		return -1;
+	}
+	client_fd_to_idx[fd] = idx;
 	// send signal to pid
 	kill(pid, SIGUSR1);
 	return 0;
