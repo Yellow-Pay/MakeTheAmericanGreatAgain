@@ -1,0 +1,100 @@
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 5476782
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 6480926
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 5733620
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 4604984
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 6939790
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 3739146
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 4761956
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 5778266
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 7324616
+
+[servers, clients, wrnumbers] = [10,10,100] Client: Total send bytes: 1024000, cost: 5285476
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 25690778
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 29180758
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 25803842
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 32833024
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 28301116
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 25226264
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 27952684
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 27049422
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 33530042
+
+[servers, clients, wrnumbers] = [10,10,1000] Client: Total send bytes: 10240000, cost: 29008656
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 199618214
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 206063162
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 203820378
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 210304636
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 217670180
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 203028412
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 203587386
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 209355018
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 201933068
+
+[servers, clients, wrnumbers] = [10,10,10000] Client: Total send bytes: 102400000, cost: 209347762
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 2012618486
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 2011255030
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1996475824
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1997278678
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1964408086
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1984670688
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1968381966
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1923497630
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1971267146
+
+[servers, clients, wrnumbers] = [10,10,100000] Client: Total send bytes: 1024000000, cost: 1987407066
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 20101021480
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19617151626
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 20003710062
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19776338046
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19862495852
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19649434236
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19640365288
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19775659220
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19695705570
+
+[servers, clients, wrnumbers] = [10,10,1000000] Client: Total send bytes: 1650065408, cost: 19691929744
