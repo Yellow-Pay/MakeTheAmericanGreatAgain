@@ -69,7 +69,7 @@ RingBuffer_t *rb_init(int idx) {
 	shmid_ds info;
 	shmctl(shmid, IPC_STAT, &info);
 	char *address = (char *) shmat(shmid, (void *)0, 0);
-	assert(address != (char*) ~0);
+	assert((int)address != -1);
 	uint32_t *data = (uint32_t *)address;
 	char *content = (char *)&data[METADATA_SIZE];
 	if (info.shm_nattch == 0) {
@@ -91,6 +91,10 @@ void rb_destroy(RingBuffer_t *rb) {
 }
 
 int rb_read(RingBuffer_t *rb, int len, char *output) {
+#ifndef NDEBUG
+	printf("rb_read rb - 0x%lx\n", rb);
+	printf("rb->address - 0x%lx\n", rb->address);
+#endif
 	uint32_t head, tail, new_head;
 	int size;
 retry:
@@ -118,6 +122,10 @@ retry:
 }
 
 int rb_write(RingBuffer_t *rb, int len, char *input) {
+#ifndef NDEBUG
+	printf("rb_write rb - 0x%lx\n", rb);
+	printf("rb->address - 0x%lx\n", rb->address);
+#endif
 	uint32_t head, tail, old_tail, new_tail;
 	int size;
 retry:

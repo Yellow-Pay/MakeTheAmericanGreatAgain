@@ -10,6 +10,7 @@ endif
 CFLAGS=-fPIC -O2 -DNDEBUG 
 
 all: libshm.so test
+	@ipcrm -a
 
 client: client.c
 	$(CC) $^ -o $@

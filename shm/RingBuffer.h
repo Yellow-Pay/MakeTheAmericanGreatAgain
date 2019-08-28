@@ -8,7 +8,7 @@
 //  |<- headptr ->|<- tailptr ->|<- oldtail ->|<-      DATA     -> |
 //  ----------------------------------------------------------------
 
-#define SHM_SIZE 4096 * 4
+#define SHM_SIZE 4096 * 512
 #define METADATA_SIZE 3
 #define SHM_DATA_SIZE (SHM_SIZE - METADATA_SIZE * sizeof(uint32_t))
 #define GET_HEAD(rb) ((uint32_t *)(rb->address))[0]
