@@ -7,7 +7,7 @@ ifeq ($(UNAME),Darwin)
 CXX=g++ -g -std=c++11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
 endif
 
-CFLAGS=-fPIC
+CFLAGS=-fPIC -O2
 
 obj-cpp=RingBuffer.cpp Connection.cpp Pool.cpp
 obj-c=socket.c
