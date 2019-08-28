@@ -47,6 +47,7 @@ RingBuffer_t* rb_get(int k) {
 }
 
 RingBuffer_t *rb_init(int idx) {
+	cout << "rb_init: " << idx << endl;
 	key_t key = idx << 16;
 	RingBuffer_t *rb = (RingBuffer_t *)malloc(sizeof(RingBuffer_t));
 	if (!rb) return NULL;
@@ -57,6 +58,7 @@ RingBuffer_t *rb_init(int idx) {
 	uint32_t *data = (uint32_t *)address;
 	char *content = (char *)&data[METADATA_SIZE];
 	if (info.shm_nattch == 0) {
+		cout << "rb_init reset shared memory: " << idx << endl;
 		data[0] = data[1] = data[2] = 0;
 	}
 	//printf("init - rb->address = 0x%lx\n", address);

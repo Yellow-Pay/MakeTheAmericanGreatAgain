@@ -114,6 +114,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 		return -1;
 	}
 	client_fd_to_idx[fd] = idx;
+	rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(idx), GET_LOCAL_PORT_FROM_FD(idx)));
 	// send signal to pid
 	kill(pid, SIGUSR1);
 	return 0;
@@ -135,6 +136,7 @@ int accept(int fd, struct sockaddr *addr, socklen_t *len) {
 	sigaction(SIGUSR1, &siga, NULL);
 	pause();
 	// wait for signal
+	rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
 	int client_port = read_port_table(server_port) & 0xFFFF;
 	return (client_port << 16) | server_port;
 }
@@ -151,7 +153,7 @@ ssize_t sendto(int fd, const void *buf, size_t len, int flags,
 	}
 	writer = rb_get(get_idx(GET_LOCAL_PORT_FROM_FD(fd), GET_REMOTE_PORT_FROM_FD(fd)));
 #ifndef NDEBUG
-	printf("socket send API: writer->index: %d\n", writer->index);
+	printf("socket send API: writer->index: %d, writer: %x, address: %x", writer->index, writer, writer->address);
 #endif	
 	return rb_write(writer, len, (char *)buf);
 }
@@ -170,7 +172,7 @@ ssize_t recvfrom(int fd, void *buf, size_t len, int flags,
 	}
 	reader = rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
 #ifndef NDEBUG
-	printf("socket recv API: reader->index: %d\n", reader->index);
+	printf("socket recv API: reader->index: %d, reader: %x, address: %x\n", reader->index, reader, reader->address);
 #endif
 	int ret = rb_read(reader, len, (char *)buf);
 	while (ret == 0) {
