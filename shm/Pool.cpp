@@ -60,10 +60,9 @@ retry:
 		new_next = address[ret];
 		// all-or-nothing op
 		if (!__sync_bool_compare_and_swap(&address[0], ret, new_next)) {
-			printf("retry!\n");
 			goto retry;
 		}
-		std::cout << "Channel.get: " << ret << std::endl;
+		//std::cout << "Channel.get: " << ret << std::endl;
 		return ret;
 	}
 	void release(int index) {
@@ -87,7 +86,7 @@ struct Pool {
 		while (true) {
 			int r = current->get();
 			if (r > 0) {
-				std::cout << "Pool.get: " << r << std::endl;
+				//std::cout << "Pool.get: " << r << std::endl;
 				return prefix + r;
 			}
 			prefix += current->size;
