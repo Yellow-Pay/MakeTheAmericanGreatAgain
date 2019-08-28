@@ -1,150 +1,47 @@
-address port: 58244
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 2460694682
-address port: 60036
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1017856, cost: 3738155206
-address port: 61060
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1022976, cost: 4359699096
-address port: 62084
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 3703443454
-address port: 63364
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 3486918740
-address port: 64644
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 6750324876
-address port: 28642
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 2442904080
-address port: 29922
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1022976, cost: 3885734790
-address port: 32226
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1020928, cost: 3508571166
-address port: 33506
-
-[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1022976, cost: 3290784622
-address port: 36578
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10238976, cost: 2731360542
-address port: 37602
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 3483540188
-address port: 38882
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10236928, cost: 3468536640
-address port: 40162
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10225664, cost: 3565975052
-address port: 41442
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10225664, cost: 5346223656
-address port: 42722
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 3615114198
-address port: 17796
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10236928, cost: 9787052022
-address port: 19076
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10232832, cost: 3228530186
-address port: 20100
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10230784, cost: 3310264380
-address port: 21124
-
-[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10231808, cost: 4021908962
-address port: 25220
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102391808, cost: 4492253834
-address port: 26756
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102388736, cost: 6426541310
-address port: 28036
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102394880, cost: 3478647144
-address port: 28804
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102391808, cost: 3492471166
-address port: 29828
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102368256, cost: 3393179914
-address port: 31108
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102387712, cost: 3593759810
-address port: 32132
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102363136, cost: 3699125382
-address port: 33412
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102387712, cost: 3572382310
-address port: 34692
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102392832, cost: 3896863312
-address port: 35972
-
-[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102384640, cost: 4138838188
-address port: 38788
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023904768, cost: 9212312536
-address port: 40068
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023921152, cost: 5492049716
-address port: 40836
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023927296, cost: 5752995854
-address port: 44164
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023879168, cost: 5240875600
-address port: 45444
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023897600, cost: 6155690134
-address port: 46724
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023879168, cost: 5281809120
-address port: 48260
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023927296, cost: 5376890476
-address port: 49284
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023919104, cost: 5346989864
-address port: 50308
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023931392, cost: 5353264396
-address port: 51076
-
-[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1023925248, cost: 5568502742
-address port: 55428
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649120256, cost: 24899770280
-address port: 60548
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649232896, cost: 23251939492
-address port: 62340
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649181696, cost: 24431634582
-address port: 64900
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649337344, cost: 23310282646
-address port: 6789
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649282048, cost: 23352654544
-address port: 8069
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649329152, cost: 23141402680
-address port: 10629
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649275904, cost: 23118638610
-address port: 16005
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649170432, cost: 23537920154
-address port: 18309
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649391616, cost: 23417401524
-address port: 20357
-
-[servers, clients, wrnumbers] = [10,10,1000000] Server: Total read bytes: 1649350656, cost: 23232168718
+[servers, clients, wrnumbers] = [1,1,10000] Server: Total read bytes: 10240000, cost: 5358621508
+[servers, clients, wrnumbers] = [1,1,10000] Server: Total read bytes: 10240000, cost: 6341961600
+[servers, clients, wrnumbers] = [1,1,1000] Server: Total read bytes: 1024000, cost: 5435399182
+[servers, clients, wrnumbers] = [1,1,100] Server: Total read bytes: 102400, cost: 4394500850
+[servers, clients, wrnumbers] = [1,10,10000] Server: Total read bytes: 10240000, cost: 4659349166
+[servers, clients, wrnumbers] = [1,10,10000] Server: Total read bytes: 10240000, cost: 4851391822
+[servers, clients, wrnumbers] = [1,10,1000] Server: Total read bytes: 1024000, cost: 4507611384
+[servers, clients, wrnumbers] = [1,10,1000] Server: Total read bytes: 1024000, cost: 4663994068
+[servers, clients, wrnumbers] = [1,10,1000] Server: Total read bytes: 1024000, cost: 4741992118
+[servers, clients, wrnumbers] = [1,10,1000] Server: Total read bytes: 1024000, cost: 4906275466
+[servers, clients, wrnumbers] = [1,10,1000] Server: Total read bytes: 1024000, cost: 4938952860
+[servers, clients, wrnumbers] = [1,10,100] Server: Total read bytes: 102400, cost: 4622446188
+[servers, clients, wrnumbers] = [1,10,100] Server: Total read bytes: 102400, cost: 4715357884
+[servers, clients, wrnumbers] = [1,10,100] Server: Total read bytes: 102400, cost: 5034449352
+[servers, clients, wrnumbers] = [1,10,100] Server: Total read bytes: 102400, cost: 5279302510
+[servers, clients, wrnumbers] = [1,10,10] Server: Total read bytes: 10240, cost: 4489039136
+[servers, clients, wrnumbers] = [1,10,10] Server: Total read bytes: 10240, cost: 4644608914
+[servers, clients, wrnumbers] = [1,10,10] Server: Total read bytes: 10240, cost: 5186575684
+[servers, clients, wrnumbers] = [10,1,100000] Server: Total read bytes: 102400000, cost: 26492698346
+[servers, clients, wrnumbers] = [10,1,100000] Server: Total read bytes: 102400000, cost: 26514649570
+[servers, clients, wrnumbers] = [10,1,100000] Server: Total read bytes: 102400000, cost: 28370816852
+[servers, clients, wrnumbers] = [10,1,10000] Server: Total read bytes: 10240000, cost: 22831984808
+[servers, clients, wrnumbers] = [10,1,10000] Server: Total read bytes: 10240000, cost: 23287657184
+[servers, clients, wrnumbers] = [10,1,1000] Server: Total read bytes: 1024000, cost: 22637872516
+[servers, clients, wrnumbers] = [10,1,1000] Server: Total read bytes: 1024000, cost: 22681856866
+[servers, clients, wrnumbers] = [10,1,100] Server: Total read bytes: 102400, cost: 20747650360
+[servers, clients, wrnumbers] = [10,1,100] Server: Total read bytes: 102400, cost: 22640393832
+[servers, clients, wrnumbers] = [10,1,100] Server: Total read bytes: 102400, cost: 27303919316
+[servers, clients, wrnumbers] = [10,1,10] Server: Total read bytes: 10240, cost: 22443040682
+[servers, clients, wrnumbers] = [10,1,10] Server: Total read bytes: 10240, cost: 23478045274
+[servers, clients, wrnumbers] = [10,10,100000] Server: Total read bytes: 1024000000, cost: 11767861388
+[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102400000, cost: 5019674702
+[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102400000, cost: 5363665174
+[servers, clients, wrnumbers] = [10,10,10000] Server: Total read bytes: 102400000, cost: 5392195962
+[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 4677167842
+[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 5214909382
+[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 6004205948
+[servers, clients, wrnumbers] = [10,10,1000] Server: Total read bytes: 10240000, cost: 6146900322
+[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 6993938374
+[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 7013037890
+[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 7243185030
+[servers, clients, wrnumbers] = [10,10,100] Server: Total read bytes: 1024000, cost: 7387918132
+[servers, clients, wrnumbers] = [10,10,10] Server: Total read bytes: 102400, cost: 14419880344
+[servers, clients, wrnumbers] = [10,10,10] Server: Total read bytes: 102400, cost: 6257290622
+[servers, clients, wrnumbers] = [10,10,10] Server: Total read bytes: 102400, cost: 6626542032
+[servers, clients, wrnumbers] = [10,10,10] Server: Total read bytes: 102400, cost: 7211523386
+[servers, clients, wrnumbers] = [10,10,10] Server: Total read bytes: 102400, cost: 7339446128
