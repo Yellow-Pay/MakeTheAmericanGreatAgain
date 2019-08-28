@@ -1,3 +1,6 @@
+/**
+ * Test and demo using Connection API.
+*/
 #include "Connection.h"
 #include "RingBuffer.h"
 #include <cassert>

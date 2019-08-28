@@ -57,6 +57,7 @@ int read_port_table(int port) {
 }
 
 int get_free_port(int idx) {
+	// TODO: multithread support
 	for (int i = 1; i < PORT_NUMBER; i++) {
 		if (0 == read_port_table(i)) {
 			write_port_table(i, idx);
@@ -73,7 +74,9 @@ int get_free_port(int idx) {
 //int socket(int domain, int type, int protocol) {}
 
 int bind(int fd, const struct sockaddr *addr, socklen_t len) {
-	//printf("bind: \n");
+#ifndef NDEBUG
+	printf("bind: \n");
+#endif
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 	int port = addr_in->sin_port;
 	if (0 != read_port_table(port)) {
@@ -114,6 +117,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 		write_port_table(client_port, 0);
 		return -1;
 	}
+	write_port_table(client_port, -1);
 	client_fd_to_idx[fd] = idx;
 	if (!rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(idx), GET_LOCAL_PORT_FROM_FD(idx)))) {
 		return -3;
@@ -157,6 +161,7 @@ ssize_t sendto(int fd, const void *buf, size_t len, int flags,
 		fd = client_fd_to_idx[fd];
 	}
 	writer = rb_get(get_idx(GET_LOCAL_PORT_FROM_FD(fd), GET_REMOTE_PORT_FROM_FD(fd)));
+	assert(writer != NULL);
 	if (!writer) return -1;
 #ifndef NDEBUG
 	printf("socket send API: writer->index: %d, writer: %x, address: %x\n", writer->index, writer, writer->address);
@@ -177,6 +182,7 @@ ssize_t recvfrom(int fd, void *buf, size_t len, int flags,
 		fd = client_fd_to_idx[fd];
 	}
 	reader = rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
+	assert(reader);
 	if (!reader) return -1;
 #ifndef NDEBUG
 	printf("socket recv API: reader->index: %d, reader: %x, address: %x\n", reader->index, reader, reader->address);
@@ -199,6 +205,7 @@ int close(int fd) {
 	write_port_table(GET_LOCAL_PORT_FROM_FD(fd), 0);
 	RingBuffer_t *reader = NULL;
 	reader = rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
+	assert(reader);
 	if (!reader) return -1;
 #ifndef NDEBUG
 	printf("socket close API: fd = %d, src: %d, dst: %d, reader->index: %d\n", fd, GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd), reader->index);
