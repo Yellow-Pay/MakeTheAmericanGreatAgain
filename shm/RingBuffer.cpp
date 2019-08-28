@@ -18,6 +18,7 @@ key_t *get_dst_block(int srcPort) {
 		assert(shmid != -1);
 		auto address = static_cast<key_t *>(shmat(shmid, (void *)0, 0));
 		assert((char*)address + 1 != 0);
+		if (address == 0) return NULL;
 		src_memo[srcPort] = address;
 		return address;
 	} else {
@@ -26,9 +27,14 @@ key_t *get_dst_block(int srcPort) {
 }
 
 key_t get_idx(int srcPort, int dstPort) {
-	//	printf("srcPort = 0x%lx, dstPort = 0x%lx\n", srcPort, dstPort);
+	//printf("srcPort = 0x%lx, dstPort = 0x%lx\n", srcPort, dstPort);
 	auto key_array = get_dst_block(srcPort);
+	if (key_array == NULL) {
+		return -1;
+	}
+	//printf("get_array = 0x%lx\n", key_array);
 	key_t ret = key_array[dstPort];
+	//printf("get_array = 0x%lx\n", key_array[dstPort]);
 	if (ret == 0) {
 		ret = key_array[dstPort] = pool_get();
 	}
@@ -38,19 +44,23 @@ key_t get_idx(int srcPort, int dstPort) {
 void clear_idx(int srcPort, int dstPort) {
 	//	printf("srcPort = 0x%lx, dstPort = 0x%lx\n", srcPort, dstPort);
 	auto key_array = get_dst_block(srcPort);
+	if (key_array == NULL) return;
 	key_array[dstPort] = 0;
 }
 
 unordered_map<int, RingBuffer_t*> rb_memo;
 RingBuffer_t* rb_get(int k) {
+	if (k == -1) return NULL;
+	RingBuffer_t *rb = NULL;
 	if (rb_memo.find(k) == rb_memo.end()) {
-		rb_memo[k] = rb_init(k);
+		rb = rb_init(k);
+		if (!rb) return NULL;
+		rb_memo[k] = rb;
 	}
 	return rb_memo[k];
 }
 
 RingBuffer_t *rb_init(int idx) {
-	//cout << "rb_init: " << idx << endl;
 	key_t key = idx << 16;
 	RingBuffer_t *rb = (RingBuffer_t *)malloc(sizeof(RingBuffer_t));
 	if (!rb) return NULL;
@@ -66,11 +76,13 @@ RingBuffer_t *rb_init(int idx) {
 		//cout << "rb_init reset shared memory: " << idx << endl;
 		data[0] = data[1] = data[2] = 0;
 	}
-	//printf("init - rb->address = 0x%lx\n", address);
 	rb->address = address;
 	rb->content = content; 
 	rb->index = idx;
 	rb->shmid = shmid;
+	//cout << "rb_init: " << idx << endl;
+	//cout << "rb: " << rb << endl;
+	//printf("init - rb->address = 0x%lx\n", address);
 	return rb;
 }
 

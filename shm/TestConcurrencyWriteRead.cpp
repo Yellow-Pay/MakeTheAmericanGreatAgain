@@ -1,6 +1,6 @@
 #include <cassert>
 #include <unistd.h>
-#include "socket.h"
+#include <sys/socket.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <string.h>
@@ -9,6 +9,7 @@
 #include <numeric>
 #include <iostream>
 #include <stdint.h>
+#include <sys/wait.h>
 
 using std::cout;
 using std::vector;
@@ -112,7 +113,7 @@ int client() {
 	}
     std::vector<std::future<int>> f(thread_number);
 	char buffer[1024];
-    memset(buffer, 0x3f3f3f3f, 1024); 
+    memset(buffer, 0x3f, 1024); 
     for (int i = 0; i < thread_number; ++i) {
         f[i] = std::async([=]() -> int {
             int ans = 0;
@@ -126,7 +127,7 @@ int client() {
     int total_write = std::accumulate(f.begin(), f.end(), 0, add_future);
 	close(sock);
 	auto end = get_time();
-    cout << "\nClient: Total read bytes: " << total_write << ", cost: " << end - start << endl;
+    cout << "\nClient: Total send bytes: " << total_write << ", cost: " << end - start << endl;
 	return 0;
 }
 

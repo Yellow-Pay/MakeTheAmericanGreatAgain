@@ -1,6 +1,7 @@
 #include <memory>
 #include <sys/shm.h>
 #include <iostream>
+#include <cassert>
 
 const int POOL_SHM_KEY = 0x3f3f3f3f;
 const int META_FILED_SIZE = 2;
