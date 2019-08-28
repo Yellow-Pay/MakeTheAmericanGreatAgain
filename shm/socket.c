@@ -102,6 +102,9 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 		if (pid > 65535) {	// the remote port is connected by another client
 			return  -1;
 		}
+		if (pid == 0) { // the remote is not open
+			return -2;
+		}
 		int client_port = get_free_port(FD2PORT(fd));
 		if (client_port == 0) return -1;
 		idx = (server_port << 16) | client_port;

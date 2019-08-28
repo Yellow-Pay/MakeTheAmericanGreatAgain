@@ -81,6 +81,7 @@ int client() {
 	valread = read(sock, buffer, 1024);
 	printf("%s\n", buffer);
 	sleep(10);
+	close(sock);
 	return 0;
 }
 
@@ -93,7 +94,7 @@ int main(int argc, char const *argv[])
 		server();
 	} else {
 		sleep(3);
-        const int thread_number = 2;
+        const int thread_number = 10;
         std::future<int> ret[thread_number];
         for (int i = 0; i < thread_number; ++i) {
             ret[i] = std::async(client);
