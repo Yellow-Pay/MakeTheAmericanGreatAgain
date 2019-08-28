@@ -145,14 +145,14 @@ ssize_t send(int fd, const void *buf, size_t len, int flags) {
 
 ssize_t sendto(int fd, const void *buf, size_t len, int flags,
 			const struct sockaddr *addr, socklen_t alen) {
-#ifndef NDEBUG
-	printf("socket send API: \n");
-#endif
 	RingBuffer_t *writer = NULL;
 	if (fd < 1024) {
 		fd = client_fd_to_idx[fd];
 	}
 	writer = rb_get(get_idx(GET_LOCAL_PORT_FROM_FD(fd), GET_REMOTE_PORT_FROM_FD(fd)));
+#ifndef NDEBUG
+	printf("socket send API: writer->index: %d\n", writer->index);
+#endif	
 	return rb_write(writer, len, (char *)buf);
 }
 
@@ -169,19 +169,31 @@ ssize_t recvfrom(int fd, void *buf, size_t len, int flags,
 		fd = client_fd_to_idx[fd];
 	}
 	reader = rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
-	return rb_read(reader, len, (char *)buf);
+#ifndef NDEBUG
+	printf("socket recv API: reader->index: %d\n", reader->index);
+#endif
+	int ret = rb_read(reader, len, (char *)buf);
+	while (ret == 0) {
+		if (read_port_table(GET_REMOTE_PORT_FROM_FD(fd)) == 0) {
+			ret = rb_read(reader, len, (char *)buf);
+			return ret;
+		}
+		ret = rb_read(reader, len, (char *)buf);
+	}
+	return ret;
 }
 
 int close(int fd) {
-#ifndef NDEBUG
-	printf("close fd = %d\n", fd);
-#endif
 	if (fd < 1024) {
 		fd = client_fd_to_idx[fd];
 	}
 	write_port_table(GET_LOCAL_PORT_FROM_FD(fd), 0);
 	RingBuffer_t *reader = NULL;
 	reader = rb_get(get_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd)));
+#ifndef NDEBUG
+	printf("socket close API: fd = %d, src: %d, dst: %d, reader->index: %d\n", fd, GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd), reader->index);
+#endif
+	clear_idx(GET_REMOTE_PORT_FROM_FD(fd), GET_LOCAL_PORT_FROM_FD(fd));
 	rb_destroy(reader);
 	return 0;
 }

@@ -32,6 +32,12 @@ key_t get_idx(int srcPort, int dstPort) {
 	return ret;
 }
 
+void clear_idx(int srcPort, int dstPort) {
+	//	printf("srcPort = 0x%lx, dstPort = 0x%lx\n", srcPort, dstPort);
+	auto key_array = get_dst_block(srcPort);
+	key_array[dstPort] = 0;
+}
+
 unordered_map<int, RingBuffer_t*> rb_memo;
 RingBuffer_t* rb_get(int k) {
 	if (rb_memo.find(k) == rb_memo.end()) {

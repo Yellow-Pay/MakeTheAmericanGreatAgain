@@ -23,6 +23,7 @@ typedef struct RingBuffer {
 } RingBuffer_t;
 
 key_t get_idx(int srcPort, int dstPort);
+void clear_idx(int srcPort, int dstPort);
 RingBuffer_t* rb_get(key_t k);
 
 RingBuffer_t *rb_init(int key);

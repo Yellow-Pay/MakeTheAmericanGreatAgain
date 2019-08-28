@@ -5,15 +5,27 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <future>
+#include <vector>
+#include <numeric>
+#include <iostream>
 
+using std::cout;
+using std::vector;
+using std::endl;
+
+const int thread_number = 10;
+const int write_read_number = 100;
 int server_port = 0;
 
+auto add_future = [](int lhs, std::future<int>& rhs) -> int {
+    return lhs + rhs.get();
+};
+
 void server() {
-    int server_fd, new_socket, valread; 
+    int server_fd, new_socket; 
 	struct sockaddr_in address; 
 	int opt = 1; 
 	int addrlen = sizeof(address); 
-	char buffer[1024] = {0}; 
 	char *hello = "Hello from server"; 
 
 	// Creating socket file descriptor 
@@ -30,7 +42,7 @@ void server() {
 
 	// Forcefully attaching socket to the port 8080 
 	if (bind(server_fd, (struct sockaddr *)&address, 
-					sizeof(address))<0) 
+					sizeof(address)) < 0) 
 	{ 
 		perror("bind failed"); 
 		exit(EXIT_FAILURE); 
@@ -47,18 +59,26 @@ void server() {
 		exit(EXIT_FAILURE); 
 	} 
 	printf("address port: %d", address.sin_port);
-	valread = read( new_socket , buffer, 1024); 
-	printf("%s\n",buffer ); 
-	send(new_socket , hello , strlen(hello) , 0 ); 
-	printf("Hello message sent from server.\n"); 
+    std::vector<std::future<int>> f(thread_number);
+    for (int i = 0; i < thread_number; ++i) {
+        f[i] = std::async([=]() -> int {
+	        char buffer[1024] = {0}; 
+            int ans = 0;
+            for (int i = 0; i < write_read_number; ++i) {
+    	        int valread = read(new_socket, buffer, 1024); 
+                ans += valread;
+            }
+            return ans;
+        });
+    }
+    int total_read = std::accumulate(f.begin(), f.end(), 0, add_future);
+    cout << "Server: Total read bytes: " << total_read << endl;
 	close(new_socket);
 }
 
 int client() {
     int sock = 0, valread;
 	struct sockaddr_in serv_addr;
-	char *hello = "Hello from client";
-	char buffer[1024] = {0};
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Socket creation error \n");
 		return -1;
@@ -76,11 +96,21 @@ int client() {
 		printf("\nConnection Failed \n");
 		return -1;
 	}
-	send(sock, hello, strlen(hello), 0);
-	printf("Hello message sent from client\n");
-	valread = read(sock, buffer, 1024);
-	printf("%s\n", buffer);
-	sleep(10);
+    std::vector<std::future<int>> f(thread_number);
+	char buffer[1024];
+    memset(buffer, 0x3f3f3f3f, 1024); 
+    for (int i = 0; i < thread_number; ++i) {
+        f[i] = std::async([=]() -> int {
+            int ans = 0;
+            for (int i = 0; i < write_read_number; ++i) {
+    	        int valread = write(sock, buffer, 1024); 
+                ans += valread;
+            }
+            return ans;
+        });
+    }
+    int total_write = std::accumulate(f.begin(), f.end(), 0, add_future);
+    cout << "Client: Total read bytes: " << total_write << endl;
 	close(sock);
 	return 0;
 }
@@ -93,20 +123,8 @@ int main(int argc, char const *argv[])
 	if (pid == 0) {
 		server();
 	} else {
-		sleep(3);
-        const int thread_number = 1;
-        std::future<int> ret[thread_number];
-        for (int i = 0; i < thread_number; ++i) {
-            ret[i] = std::async(client);
-        }
-        // 最多有一个连接成功，如果server失败，则0个连接成功
-        bool success = false;
-        for (int i = 0; i < thread_number; ++i) {
-            if (ret[i].get() == 0) {
-                assert(success == false);
-                success = true;
-            }
-        }
+        sleep(5);
+        client();
 	}
     return 0;
 }

@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
 		perror("accept"); 
 		exit(EXIT_FAILURE); 
 	} 
-	printf("address port: %d", address.sin_port);
+	printf("address port: %d\n", address.sin_port);
 	sleep(3);
 	valread = recv(new_socket , buffer, 1024, 0); 
 	printf("read success: %d\n", valread);
@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
 	valread = send(new_socket , hello , strlen(hello) , 0 ); 
 	printf("send bytes: %d\n", valread);
 	printf("Hello message sent\n"); 
-	sleep(10);
+	// sleep(10);
 	close(new_socket);
 	return 0; 
 } 

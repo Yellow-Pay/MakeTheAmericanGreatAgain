@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
 	valread = recv(sock, buffer, 1024, 0);
 	printf("Read successful bytes: %d\n", valread);
 	printf("%s\n", buffer);
-	sleep(5);
+	// sleep(5);
 	close(sock);
 	return 0;
 }
