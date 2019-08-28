@@ -2,11 +2,14 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
+#include "socket.h"
 #include <unistd.h>
-#define PORT 9010
+#include <assert.h>
+#include <stdlib.h>
 
 int main(int argc, char const *argv[]) {
+	assert(argc == 2);
+	int PORT = atoi(argv[1]);
 	int sock = 0, valread;
 	struct sockaddr_in serv_addr;
 	char *hello = "Hello from client";
@@ -24,8 +27,10 @@ int main(int argc, char const *argv[]) {
 		return -1;
 	}
 
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-		printf("\nConnection Failed \n");
+	int ret;
+	ret = connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+	if (ret < 0) {
+		printf("\nConnection Failed %d\n", ret);
 		return -1;
 	}
 	send(sock, hello, strlen(hello), 0);

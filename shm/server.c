@@ -5,9 +5,11 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <assert.h>
 
 int main(int argc, char const *argv[]) 
 { 
+	assert(argc == 2);
 	int port = atoi(argv[1]);
 	int server_fd, new_socket, valread; 
 	struct sockaddr_in address; 

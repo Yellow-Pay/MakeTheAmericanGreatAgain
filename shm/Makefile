@@ -15,7 +15,7 @@ obj-c=socket.c
 obj-o=$(obj-cpp:.cpp=.o) $(obj-c:.c=.o)
 
 libshm.so: $(obj-o)
-	$(CXX) $^ -fPIC -shared -o $@
+	$(CXX) $^ -lstdc++ -fPIC -shared -o $@
 
 %.o: %.cpp
 	$(CXX) -c $(CFLAGS) $^ -o $@

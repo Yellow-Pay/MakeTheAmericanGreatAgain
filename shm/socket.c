@@ -10,10 +10,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define MAX_PID_BITS (22)
 #define GET_LOCAL_PORT_FROM_FD(x) ((x)&0xFFFF)
 #define GET_REMOTE_PORT_FROM_FD(x) ((x) >> 16)
-#define FD2PORT(fd) (((fd) << 16) | getpid())
-#define PORT2PID(port) ((port) & 0xFFFF)
+#define FD2PORT(fd) (((fd) << MAX_PID_BITS) | getpid())
 
 #define LISTEN_PID_TABLE_KEY (0x4f4f4f4f)
 #define PORT_NUMBER (65536)
@@ -80,6 +80,7 @@ int bind(int fd, const struct sockaddr *addr, socklen_t len) {
 		return -1;
 	}
 	write_port_table(port, getpid());
+	printf("socket bind API: write_port_table: %d\n", read_port_table(port));
 	return 0;
 }
 
@@ -99,7 +100,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 #ifndef NDEBUG
 		printf("socket connet API: server pid: %u\n", pid);
 #endif
-		if (pid > 65535) {	// the remote port is connected by another client
+		if (pid >= (1 << MAX_PID_BITS)) {	// the remote port is connected by another client
 			return  -1;
 		}
 		if (pid == 0) { // the remote is not open
