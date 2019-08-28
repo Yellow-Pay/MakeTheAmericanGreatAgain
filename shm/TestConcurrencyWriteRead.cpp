@@ -8,13 +8,24 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include <stdint.h>
 
 using std::cout;
 using std::vector;
 using std::endl;
 
-const int thread_number = 10;
-const int write_read_number = 100;
+static inline uint64_t get_time() {
+	uint32_t lo, hi;
+	__asm__ volatile("rdtsc\n\t"
+		:"=a"(lo), "=d"(hi)
+		:
+		:);
+	return (uint64_t)hi << 32 | lo;
+}
+
+const int server_thread_number = 4;
+const int client_thread_number = 4;
+const int write_read_number = 10;
 int server_port = 0;
 
 auto add_future = [](int lhs, std::future<int>& rhs) -> int {
@@ -22,11 +33,11 @@ auto add_future = [](int lhs, std::future<int>& rhs) -> int {
 };
 
 void server() {
+	auto start = get_time();
+	const int thread_number = server_thread_number;
     int server_fd, new_socket; 
 	struct sockaddr_in address; 
-	int opt = 1; 
 	int addrlen = sizeof(address); 
-	char *hello = "Hello from server"; 
 
 	// Creating socket file descriptor 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
@@ -65,19 +76,22 @@ void server() {
 	        char buffer[1024] = {0}; 
             int ans = 0;
             for (int i = 0; i < write_read_number; ++i) {
-    	        int valread = read(new_socket, buffer, 1024); 
+    	        int valread = recv(new_socket, buffer, 1024, 0); 
                 ans += valread;
             }
             return ans;
         });
     }
     int total_read = std::accumulate(f.begin(), f.end(), 0, add_future);
-    cout << "Server: Total read bytes: " << total_read << endl;
 	close(new_socket);
+	auto end = get_time();
+    cout << "Server: Total read bytes: " << total_read << ", cost: " << end - start << endl;
 }
 
 int client() {
-    int sock = 0, valread;
+	auto start = get_time();
+	const int thread_number = client_thread_number;
+    int sock = 0;
 	struct sockaddr_in serv_addr;
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Socket creation error \n");
@@ -103,15 +117,16 @@ int client() {
         f[i] = std::async([=]() -> int {
             int ans = 0;
             for (int i = 0; i < write_read_number; ++i) {
-    	        int valread = write(sock, buffer, 1024); 
+    	        int valread = send(sock, buffer, 1024, 0); 
                 ans += valread;
             }
             return ans;
         });
     }
     int total_write = std::accumulate(f.begin(), f.end(), 0, add_future);
-    cout << "Client: Total read bytes: " << total_write << endl;
 	close(sock);
+	auto end = get_time();
+    cout << "Client: Total read bytes: " << total_write << ", cost: " << end - start << endl;
 	return 0;
 }
 

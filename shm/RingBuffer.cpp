@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <iostream>
 #include <unordered_map>
+#include <cassert>
 
 using namespace std;
 
@@ -14,7 +15,9 @@ const int PORT_NUMBER = 65536;
 key_t *get_dst_block(int srcPort) {
 	if (src_memo.find(srcPort) == src_memo.end()) {
 		auto shmid = shmget(srcPort, PORT_NUMBER * sizeof(key_t), 0666 | IPC_CREAT);
-		auto address = (key_t *)shmat(shmid, (void *)0, 0);
+		assert(shmid != -1);
+		auto address = static_cast<key_t *>(shmat(shmid, (void *)0, 0));
+		assert((char*)address + 1 != 0);
 		src_memo[srcPort] = address;
 		return address;
 	} else {
@@ -52,9 +55,11 @@ RingBuffer_t *rb_init(int idx) {
 	RingBuffer_t *rb = (RingBuffer_t *)malloc(sizeof(RingBuffer_t));
 	if (!rb) return NULL;
 	int shmid = shmget(key, SHM_SIZE, 0666|IPC_CREAT);
+	assert(shmid != -1);
 	shmid_ds info;
 	shmctl(shmid, IPC_STAT, &info);
 	char *address = (char *) shmat(shmid, (void *)0, 0);
+	assert(address != (char*) ~0);
 	uint32_t *data = (uint32_t *)address;
 	char *content = (char *)&data[METADATA_SIZE];
 	if (info.shm_nattch == 0) {

@@ -24,9 +24,11 @@ struct Channel {
 	}
 	Channel(key_t k) {
 		shmid = shmget(k, get_channel_shm_size(), 0666 | IPC_CREAT);
+		assert(shmid != -1);
 		shmid_ds info;
 		shmctl(shmid, IPC_STAT, &info);
 		address = (index_type *)shmat(shmid, (void *)0, 0);
+		assert(address != (index_type*) ~0);
 		if (info.shm_nattch == 0) {
 			// global init, accross processes
 			for (int i = 0; i <= size; ++i) {
