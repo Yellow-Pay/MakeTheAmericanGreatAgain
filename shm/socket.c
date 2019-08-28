@@ -107,7 +107,7 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 	int client_port = get_free_port(FD2PORT(fd));
 	if (client_port == 0) return -1;
 	idx = (server_port << 16) | client_port;
-	if (!__sync_bool_compare_and_swap(read_port_table_address(server_port), pid, idx)) {
+	if (!__sync_bool_compare_and_swap(read_port_table_address(server_port), pid, (client_port | (1 << MAX_PID_BITS)))) {
 	//	printf("Failed - server_port = %d\n", server_port);
 	//	printf("pid = %d, ans = %d\n", pid, read_port_table(server_port));
 		write_port_table(client_port, 0);
