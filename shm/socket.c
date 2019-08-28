@@ -42,6 +42,10 @@ void write_port_table(int port, int value) {
 	port_table_address[port] = value;
 }
 
+static inline int* read_port_table_address(int port) {
+	return &port_table_address[port];
+}
+
 int read_port_table(int port) {
 	if (port_table_availble == 0) {
 		// TODO: multithread support
@@ -89,13 +93,20 @@ int connect(int fd, const struct sockaddr *addr, socklen_t len) {
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 	int server_port = addr_in->sin_port;
 	// TODO: check when fail
-	int pid = read_port_table(server_port);
-	int client_port = get_free_port(FD2PORT(fd));
-	if (client_port == 0) return -1;
-	int idx = (server_port << 16) | client_port;
-	client_fd_to_idx[fd] = idx;
-	// TODO: atomic write - grap the connection 
-	write_port_table(server_port, idx);
+	uint32_t pid, idx;
+	do {
+		pid = read_port_table(server_port);
+#ifndef NDEBUG
+		printf("socket connet API: server pid: %u\n", pid);
+#endif
+		if (pid > 65535) {	// the remote port is connected by another client
+			return  -1;
+		}
+		int client_port = get_free_port(FD2PORT(fd));
+		if (client_port == 0) return -1;
+		idx = (server_port << 16) | client_port;
+		client_fd_to_idx[fd] = idx;
+	} while (!__sync_bool_compare_and_swap(read_port_table_address(server_port), pid, idx));
 	// send signal to pid
 	kill(pid, SIGUSR1);
 	return 0;
@@ -152,7 +163,9 @@ ssize_t recvfrom(int fd, void *buf, size_t len, int flags,
 }
 
 int close(int fd) {
-	printf("close fd = %ld\n", fd);
+#ifndef NDEBUG
+	printf("close fd = %d\n", fd);
+#endif
 	if (fd < 1024) {
 		fd = client_fd_to_idx[fd];
 	}
